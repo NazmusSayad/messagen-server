@@ -1,55 +1,55 @@
 import { Response, Request, NextFunction } from 'express'
-import jsonwebtoken from 'jsonwebtoken'
-import User from '../../model/User'
-import { UserType } from '../../model/userSchema'
+import nodeEnv from 'manual-node-env'
+import * as jwt from '../../utils/jwt'
+import User, { UserDocument } from '../../model/User'
 
 export interface UserRequest extends Request {
-  user: UserType
+  user: UserDocument
 }
 
-export const saveToken = (req: UserRequest, res: Response) => {
-  res.cookie('token', generate(req.user?._id), {
+const cookieOptions: any = {
+  secure: nodeEnv.isDev ? false : true,
+  sameSite: 'strict',
+  maxAge: 86400000 /* 1 day -> miliseconds */ * 30,
+}
+
+export const sendCookieToken = (req: UserRequest, res: Response) => {
+  res.cookie('hasToken', true, cookieOptions)
+  res.cookie('token', jwt.generateCookieJwt(req.user._id), {
+    ...cookieOptions,
     httpOnly: true,
-    secure: true,
-    expires: new Date(Date.now() + 2592000000),
   })
 
-  res.cookie('hasToken', true, {
-    expires: new Date(Date.now() + 2592000000),
-  })
-
-  res.success({ token: true })
+  const token = jwt.generateUserJwt(req.user._id)
+  res.success({ user: req.user.getSafeInfo(), token })
 }
 
-export const checkAuth = async (req: UserRequest, res, next: NextFunction) => {
-  const userId = verify(req.cookies.token)
-  const user = await User.findById(userId)
-
-  if (!user) {
-    throw new ReqError('User not found!', 401)
-  }
-
-  req.user = user
-  next()
-}
-
-export const clearToken = (req, res: Response) => {
+export const clearCookieToken = (req, res: Response) => {
   res.clearCookie('token')
   res.clearCookie('hasToken')
   res.status(204).end()
 }
 
-const generate = (data) => {
-  return jsonwebtoken.sign({ data }, process.env.JWT_SECRET, {
-    expiresIn: '90d',
-  })
+export const getAuthToken = async (req: UserRequest, res: Response, next) => {
+  const { cookie } = jwt.parseJwt(req.cookies.token)
+  const user = await User.findById(cookie)
+  if (!user) throw new ReqError('No user found from your session', 401)
+  req.user = user
+  next()
 }
 
-const verify = (token) => {
-  const tokenInfo = jsonwebtoken.verify(token, process.env.JWT_SECRET)
-  const currentTime = Math.floor(Date.now() / 1000)
-  if (tokenInfo.exp <= currentTime) {
-    throw new ReqError('errorMessages.auth.jwtExpire')
+const checkAuthFactory =
+  (verified: boolean) => async (req: UserRequest, res, next) => {
+    const { userId } = jwt.parseJwt(req.headers.authorization)
+    const user = await User.findOne({ _id: userId, verified })
+
+    if (!user) {
+      throw new ReqError('No user found from your token', 401)
+    }
+
+    req.user = user
+    next()
   }
-  return tokenInfo.data
-}
+
+export const checkAuthToken = checkAuthFactory(true)
+export const checkAuthTokenNotVerified = checkAuthFactory(false)

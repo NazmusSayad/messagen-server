@@ -4,25 +4,24 @@ import cors from 'cors'
 import xss from 'xss-clean'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
-import rateLimit from 'express-rate-limit'
 import mongoSanitize from 'express-mongo-sanitize'
 import router from './router'
+import { requestLimit } from './core'
 const app = expressExtra({ ping: '/ping' })
 
 // Safety
-app.use(cors())
-app.use(helmet())
 app.use(
-  rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: 1000,
-    message: {
-      status: 'fail',
-      message:
-        'Too many requests from this IP, please try again after a deep sleep',
-    },
+  cors({
+    credentials: true,
+    origin: Object.entries(process.env)
+      .filter(([name]) => {
+        return name.startsWith('CLIENT')
+      })
+      .map(([, value]) => value),
   })
 )
+app.use(helmet())
+app.use(requestLimit({ max: 1000 }))
 
 // Pasrer
 app.use(cookieParser())

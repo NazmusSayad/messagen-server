@@ -1,4 +1,5 @@
-import mongoose from 'mongoose'
+import mongoose, { Model } from 'mongoose'
+import * as common from './common'
 
 export interface UserType {
   _id: string
@@ -9,6 +10,9 @@ export interface UserType {
   password: string
   passwordModifiedAt: Date
   createdAt: Date
+  verified: boolean
+  recoverCode: string
+  verificationCode: string
 }
 
 export default new mongoose.Schema<UserType>(
@@ -27,18 +31,7 @@ export default new mongoose.Schema<UserType>(
       // @ts-ignore
       match: [/^[a-z0-9]+$/, 'Enter a valid username.'],
     },
-    email: {
-      type: String,
-      lowercase: true,
-      trim: true as any,
-      unique: [true, 'Username already exists'],
-      required: [true, 'User must have a username'],
-      // @ts-ignore
-      match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        'Please fill a valid email address',
-      ],
-    },
+    email: common.email as any,
     avatar: {
       type: String,
       match: [/^https?:\/\//, 'Please enter a valid image url'],
@@ -57,6 +50,14 @@ export default new mongoose.Schema<UserType>(
       required: true,
       default: Date.now,
     },
+    verified: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+
+    recoverCode: { type: String },
+    verificationCode: { type: String },
   },
   {
     versionKey: false,
