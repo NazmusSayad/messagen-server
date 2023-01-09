@@ -14,6 +14,7 @@ userSchema.pre('save', async function (next) {
 
     this.passwordModifiedAt = Date.now()
   }
+  console.log(this)
 
   if (this.verificationCode && this.isModified('verificationCode')) {
     this._verificationCode = this.verificationCode

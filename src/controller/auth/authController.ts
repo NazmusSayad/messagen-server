@@ -56,17 +56,23 @@ export const requestPassReset = async (req: Request, res: Response) => {
   })
 }
 
-export const resetPassword = async (req: Request, res, next) => {
+export const resetPassword = async (req: UserRequest, res, next) => {
   const { login, code, new_password } = req.body
   if (typeof code !== 'string') throw new ReqError('Please enter a valid code')
 
   const user = await User.findOne(getEmailOrUsername(login))
-  if (!user || !(await bcrypt.compare(code, user.recoverCode))) {
+  if (
+    !(
+      user &&
+      user.recoverCode &&
+      (await bcrypt.compare(code, user.recoverCode))
+    )
+  ) {
     throw new ReqError("Entered details doesn't matched")
   }
 
   user.password = new_password
   user.recoverCode = undefined
-  await user.save()
+  req.user = await user.save()
   next()
 }
