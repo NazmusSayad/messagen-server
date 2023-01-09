@@ -1,8 +1,8 @@
-import mongoose, { Model } from 'mongoose'
+import mongoose from 'mongoose'
 import * as common from './common'
 
 export interface UserType {
-  _id: string
+  _id: mongoose.Types.ObjectId
   name: string
   username: string
   email: string
@@ -11,6 +11,7 @@ export interface UserType {
   passwordModifiedAt: Date
   createdAt: Date
   verified: boolean
+  pendingEmail: string
   recoverCode: string
   verificationCode: string
 }
@@ -56,6 +57,7 @@ export default new mongoose.Schema<UserType>(
       required: true,
     },
 
+    pendingEmail: { ...common.email, required: false } as any,
     recoverCode: { type: String },
     verificationCode: { type: String },
   },

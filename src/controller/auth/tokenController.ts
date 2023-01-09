@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from 'express'
+import { Response, Request } from 'express'
 import nodeEnv from 'manual-node-env'
 import * as jwt from '../../utils/jwt'
 import User, { UserDocument } from '../../model/User'

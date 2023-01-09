@@ -1,10 +1,10 @@
 import express from 'express'
 import { catchError } from 'req-error'
+import { requestLimit } from '../core'
 const router = express.Router()
 export default router
 import * as _tokenController from '../controller/auth/tokenController'
 import * as _authController from '../controller/auth/authController'
-import { requestLimit } from '../core'
 
 const tokenController = catchError(_tokenController)
 const authController = catchError(_authController)

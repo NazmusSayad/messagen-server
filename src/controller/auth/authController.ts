@@ -76,3 +76,12 @@ export const resetPassword = async (req: UserRequest, res, next) => {
   req.user = await user.save()
   next()
 }
+
+export const checkPassword = async (req: UserRequest, res, next) => {
+  const isOk = await bcrypt.compare(req.body.password, req.user.password)
+  if (!isOk) {
+    throw new ReqError('Please enter the right password')
+  }
+
+  next()
+}
