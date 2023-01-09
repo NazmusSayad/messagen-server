@@ -2,7 +2,6 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "ready": "yarn;yarn build",
     "start": "node ./dist --NODE_ENV=production",
     "dev": "node --watch ./dist --NODE_ENV=development",
     "debug": "ndb npm run dev"
