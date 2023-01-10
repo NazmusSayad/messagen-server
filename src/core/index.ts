@@ -1,4 +1,4 @@
-import rateLimit, { MemoryStore } from 'express-rate-limit'
+import rateLimit from 'express-rate-limit'
 
 export const requestLimit = ({ duration = 3600000 /* 1 hour */, max }) => {
   return rateLimit({
@@ -8,6 +8,5 @@ export const requestLimit = ({ duration = 3600000 /* 1 hour */, max }) => {
       status: 'fail',
       message: 'Too many requests, please try later',
     },
-    store: new MemoryStore(),
   })
 }

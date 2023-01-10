@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { checkType } from 'express-master'
 import { UserRequest } from './tokenController'
 import crypto from 'crypto'
 import * as bcrypt from 'bcrypt'
@@ -7,6 +8,13 @@ import { getEmailOrUsername } from '../../utils/user'
 
 export const signup = async (req: UserRequest, res, next) => {
   const reqBody = req.getBody('name', 'username', 'email', 'password')
+  checkType.string({
+    name: reqBody.name,
+    email: reqBody.email,
+    username: reqBody.username,
+    password: reqBody.password,
+  })
+
   const code = crypto.randomUUID().split('-')[0]
   const user = await User.create({ ...reqBody, verificationCode: code })
 
@@ -22,7 +30,7 @@ export const resendAccVerifyCode = async (req: UserRequest, res: Response) => {
 
 export const verifyAccount = async (req: UserRequest, res: Response) => {
   const { code } = req.body
-  if (typeof code !== 'string') throw new ReqError('Please enter a valid code')
+  checkType.string({ code })
 
   const isOk = await bcrypt.compare(code, req.user.verificationCode)
   if (!isOk) throw new ReqError("Entered code doesn't matched!")
@@ -35,6 +43,8 @@ export const verifyAccount = async (req: UserRequest, res: Response) => {
 
 export const login = async (req: UserRequest, res, next) => {
   const { login, password } = req.body
+  checkType.string({ login, password })
+
   const user = await User.findOne(getEmailOrUsername(login))
   if (!user || !(await bcrypt.compare(password, user.password))) {
     throw new ReqError('Login failed!')
@@ -45,7 +55,10 @@ export const login = async (req: UserRequest, res, next) => {
 }
 
 export const requestPassReset = async (req: Request, res: Response) => {
-  const user = await User.findOne(getEmailOrUsername(req.body.login))
+  const { login } = req.body
+  checkType.string({ login })
+
+  const user = await User.findOne(getEmailOrUsername(login))
   if (user) {
     user.recoverCode = crypto.randomUUID().split('-')[0]
     await user.save()
@@ -58,7 +71,7 @@ export const requestPassReset = async (req: Request, res: Response) => {
 
 export const resetPassword = async (req: UserRequest, res, next) => {
   const { login, code, new_password } = req.body
-  if (typeof code !== 'string') throw new ReqError('Please enter a valid code')
+  checkType.string({ login, code, new_password })
 
   const user = await User.findOne(getEmailOrUsername(login))
   if (
@@ -78,7 +91,10 @@ export const resetPassword = async (req: UserRequest, res, next) => {
 }
 
 export const checkPassword = async (req: UserRequest, res, next) => {
-  const isOk = await bcrypt.compare(req.body.password, req.user.password)
+  const { password } = req.body
+  checkType.string({ password })
+
+  const isOk = await bcrypt.compare(password, req.user.password)
   if (!isOk) {
     throw new ReqError('Please enter the right password')
   }

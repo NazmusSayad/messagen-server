@@ -1,4 +1,6 @@
+import { checkType } from 'express-master'
+
 export const getEmailOrUsername = (login: string) => {
-  if (!login) throw new ReqError('Login field not found!')
+  checkType.string({ login })
   return login.includes('@') ? { email: login } : { username: login }
 }

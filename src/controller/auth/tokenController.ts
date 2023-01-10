@@ -1,4 +1,5 @@
 import { Response, Request } from 'express'
+import { checkType } from 'express-master'
 import nodeEnv from 'manual-node-env'
 import * as jwt from '../../utils/jwt'
 import User, { UserDocument } from '../../model/User'
@@ -31,7 +32,10 @@ export const clearCookieToken = (req, res: Response) => {
 }
 
 export const getAuthToken = async (req: UserRequest, res: Response, next) => {
-  const { cookie } = jwt.parseJwt(req.cookies.token)
+  const { token } = req.cookies
+  checkType.string({ token })
+
+  const { cookie } = jwt.parseJwt(token)
   const user = await User.findById(cookie)
   if (!user) throw new ReqError('No user found from your session', 401)
   req.user = user
@@ -40,7 +44,10 @@ export const getAuthToken = async (req: UserRequest, res: Response, next) => {
 
 const checkAuthFactory =
   (verified: boolean) => async (req: UserRequest, res, next) => {
-    const { userId } = jwt.parseJwt(req.headers.authorization)
+    const { authorization } = req.headers
+    checkType.string({ authorization })
+
+    const { userId } = jwt.parseJwt(authorization)
     const user = await User.findOne({ _id: userId, verified })
 
     if (!user) {

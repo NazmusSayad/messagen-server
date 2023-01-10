@@ -1,13 +1,13 @@
 import express from 'express'
-import expressExtra, { handleError } from 'express-master'
+import expressMaster from 'express-master'
 import cors from 'cors'
 import xss from 'xss-clean'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import mongoSanitize from 'express-mongo-sanitize'
-import router from './router'
 import { requestLimit } from './core'
-const app = expressExtra({ ping: '/ping' })
+import router from './router'
+const app = express()
 
 // Safety
 app.use(
@@ -33,6 +33,6 @@ app.use(xss())
 
 // Routes
 app.use(router)
-handleError(app)
+expressMaster(app, { ping: '/ping' })
 
 export default app

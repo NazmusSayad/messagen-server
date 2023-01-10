@@ -1,4 +1,5 @@
 import 'manual-node-env'
+import 'req-error/global'
 import { config } from 'dotenv'
 config()
 

@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "target": "ESNext",
     "module": "CommonJS",
+    "outDir": "./dist",
     "esModuleInterop": true
   },
-  "include": ["./src"]
+  "include": ["./src", "express-master/src/checkType/checkItems.ts"],
+  "exclude": ["./node_modules"]
 }
