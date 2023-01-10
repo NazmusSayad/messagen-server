@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "CommonJS",
     "outDir": "./dist",
+    "removeComments": true,
     "esModuleInterop": true
   },
   "include": ["./src", "express-master/src/checkType/checkItems.ts"],
