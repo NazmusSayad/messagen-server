@@ -4,7 +4,8 @@
     "module": "CommonJS",
     "outDir": "./dist",
     "removeComments": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "inlineSourceMap": true
   },
   "include": ["./src", "express-master/src/checkType/checkItems.ts"],
   "exclude": ["./node_modules"]
