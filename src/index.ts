@@ -10,4 +10,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 import './database'
-import './server'
+import server from './server'
+import root from './socket'
+
+root.attach(server)

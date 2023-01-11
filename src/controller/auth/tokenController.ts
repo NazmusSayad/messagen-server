@@ -3,9 +3,16 @@ import { checkType } from 'express-master'
 import nodeEnv from 'manual-node-env'
 import * as jwt from '../../utils/jwt'
 import User, { UserDocument } from '../../model/User'
+import { verifiedIo } from '../../socket'
 
 export interface UserRequest extends Request {
   user: UserDocument
+  io: {
+    send: typeof verifiedIo.emit
+    sendAll: typeof verifiedIo.emit
+    disconnect: typeof verifiedIo.disconnectSockets
+    disconnectAll: typeof verifiedIo.disconnectSockets
+  }
 }
 
 const cookieOptions: any = {
@@ -44,7 +51,7 @@ export const getAuthToken = async (req: UserRequest, res: Response, next) => {
 
 const checkAuthFactory =
   (verified: boolean) => async (req: UserRequest, res, next) => {
-    const { authorization } = req.headers
+    const { authorization, io } = req.headers
     checkType.string({ authorization })
 
     const { userId } = jwt.parseJwt(authorization)
@@ -54,6 +61,15 @@ const checkAuthFactory =
       throw new ReqError('No user found from your token', 401)
     }
 
+    const allSockets = verifiedIo.to(user._id.toString())
+    const sockets = allSockets.except(io)
+
+    req.io = {
+      send: sockets.emit,
+      sendAll: allSockets.emit,
+      disconnect: sockets.disconnectSockets,
+      disconnectAll: allSockets.disconnectSockets,
+    }
     req.user = user
     next()
   }
