@@ -2,8 +2,12 @@ import { Socket } from 'socket.io'
 import { checkType } from 'express-master'
 import User from '../../model/User'
 import * as jwt from '../../utils/jwt'
+import { UserType } from '../../model/userSchema'
 
-export const onConnect = async (socket: Socket) => {
+export const onConnect = async (
+  socket: Socket,
+  start: (user: UserType) => void
+) => {
   try {
     const { authorization } = socket.handshake.auth
     checkType.string({ authorization })
@@ -12,7 +16,7 @@ export const onConnect = async (socket: Socket) => {
     const user = await User.findOne({ _id: userId, verified: true })
 
     if (!user) throw new Error('404')
-    socket.join(user._id.toString())
+    start(user)
   } catch (err) {
     socket.disconnect(err.message)
   }

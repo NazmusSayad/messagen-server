@@ -3,15 +3,15 @@ import { checkType } from 'express-master'
 import nodeEnv from 'manual-node-env'
 import * as jwt from '../../utils/jwt'
 import User, { UserDocument } from '../../model/User'
-import { verifiedIo } from '../../socket'
+import { mainIo } from '../../socket'
 
 export interface UserRequest extends Request {
   user: UserDocument
   io: {
-    send: typeof verifiedIo.emit
-    sendAll: typeof verifiedIo.emit
-    disconnect: typeof verifiedIo.disconnectSockets
-    disconnectAll: typeof verifiedIo.disconnectSockets
+    send: typeof mainIo.emit
+    sendAll: typeof mainIo.emit
+    disconnect: typeof mainIo.disconnectSockets
+    disconnectAll: typeof mainIo.disconnectSockets
   }
 }
 
@@ -61,7 +61,7 @@ const checkAuthFactory =
       throw new ReqError('No user found from your token', 401)
     }
 
-    const allSockets = verifiedIo.to(user._id.toString())
+    const allSockets = mainIo.to(user._id.toString())
     const sockets = allSockets.except(io)
 
     req.io = {

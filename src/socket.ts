@@ -1,10 +1,22 @@
 import { Server } from 'socket.io'
 import { onConnect } from './controller/auth/socketController'
+import socketRoutes from './routes/socketRoute'
 
-const root = new Server({ cors: { origin: '*' } })
-const verifiedIo = root.of('/')
+const io = new Server({ cors: { origin: '*' } })
 
-verifiedIo.on('connection', onConnect)
+const mainIo = io.of('/')
+socketRoutes.setup(mainIo)
 
-export default root
-export { verifiedIo }
+mainIo.on('connection', async (socket) => {
+  onConnect(socket, (user) => {
+    socket.join(user._id.toString())
+
+    socket.onAny((ev: string, ...args: [any, Function]) => {
+      if (ev.startsWith('$')) return
+      socketRoutes.runSocket(socket, user, ev, ...args)
+    })
+  })
+})
+
+export default io
+export { mainIo }

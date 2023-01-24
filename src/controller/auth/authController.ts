@@ -4,7 +4,7 @@ import { UserRequest } from './tokenController'
 import crypto from 'crypto'
 import * as bcrypt from 'bcrypt'
 import User from '../../model/User'
-import { getEmailOrUsername } from '../../utils/user'
+import { getQueryFromLoginAndPass } from '../../utils/user'
 
 export const signup = async (req: UserRequest, res, next) => {
   const reqBody = req.getBody('name', 'username', 'email', 'password')
@@ -45,7 +45,7 @@ export const login = async (req: UserRequest, res, next) => {
   const { login, password } = req.body
   checkType.string({ login, password })
 
-  const user = await User.findOne(getEmailOrUsername(login))
+  const user = await User.findOne(getQueryFromLoginAndPass(login))
   if (!user || !(await bcrypt.compare(password, user.password))) {
     throw new ReqError('Login failed!')
   }
@@ -58,7 +58,7 @@ export const requestPassReset = async (req: Request, res: Response) => {
   const { login } = req.body
   checkType.string({ login })
 
-  const user = await User.findOne(getEmailOrUsername(login))
+  const user = await User.findOne(getQueryFromLoginAndPass(login))
   if (user) {
     user.recoverCode = crypto.randomUUID().split('-')[0]
     await user.save()
@@ -73,7 +73,7 @@ export const resetPassword = async (req: UserRequest, res, next) => {
   const { login, code, new_password } = req.body
   checkType.string({ login, code, new_password })
 
-  const user = await User.findOne(getEmailOrUsername(login))
+  const user = await User.findOne(getQueryFromLoginAndPass(login))
   if (
     !(
       user &&

@@ -1,9 +1,10 @@
 {
   "scripts": {
     "build": "tsc",
-    "watch": "tsc -w",
     "start": "node ./dist --NODE_ENV=production",
-    "dev": "node --watch ./dist --NODE_ENV=development",
+    "dev:dev": "node --watch ./dist --NODE_ENV=development",
+    "dev:tsc": "tsc -w",
+    "dev": "npm run dev:tsc & npm run dev:dev",
     "debug": "ndb npm run dev"
   },
   "dependencies": {
@@ -20,7 +21,7 @@
     "manual-node-env": "^1.0.4",
     "mongoose": "^6.8.3",
     "nodemailer": "^6.8.0",
-    "req-error": "^1.0.18",
+    "req-error": "^1.0.19",
     "socket.io": "^4.5.4",
     "xss-clean": "^0.1.1"
   },

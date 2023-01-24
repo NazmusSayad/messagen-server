@@ -14,5 +14,3 @@ export const getFieldsFromObject = <
   })
   return output
 }
-
-getFieldsFromObject({ body: 'hello' }, 'body').body
