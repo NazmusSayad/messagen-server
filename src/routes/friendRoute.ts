@@ -4,7 +4,7 @@ const router = express.Router()
 export default router
 import * as _tokenController from '../controller/auth/tokenController'
 import * as _authController from '../controller/auth/authController'
-import * as _friendController from '../controller/user/friendController'
+import * as _friendController from '../controller/friendController'
 
 const tokenController = catchError(_tokenController)
 const friendController = catchError(_friendController)

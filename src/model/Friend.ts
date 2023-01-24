@@ -29,4 +29,5 @@ const schema = new mongoose.Schema<FriendType>(
   }
 )
 
+schema.index({ user: 1, friend: 1 }, { unique: true })
 export default mongoose.model('friend', schema)

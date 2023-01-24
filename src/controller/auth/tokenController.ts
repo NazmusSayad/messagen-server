@@ -9,9 +9,8 @@ export interface UserRequest extends Request {
   user: UserDocument
   io: {
     send: typeof mainIo.emit
-    sendAll: typeof mainIo.emit
+    sendTo(ev: string, rooms: string | [string], data: unknown): void
     disconnect: typeof mainIo.disconnectSockets
-    disconnectAll: typeof mainIo.disconnectSockets
   }
 }
 
@@ -51,7 +50,7 @@ export const getAuthToken = async (req: UserRequest, res: Response, next) => {
 
 const checkAuthFactory =
   (verified: boolean) => async (req: UserRequest, res, next) => {
-    const { authorization, io } = req.headers
+    const { authorization, socketid } = req.headers
     checkType.string({ authorization })
 
     const { userId } = jwt.parseJwt(authorization)
@@ -61,14 +60,14 @@ const checkAuthFactory =
       throw new ReqError('No user found from your token', 401)
     }
 
-    const allSockets = mainIo.to(user._id.toString())
-    const sockets = allSockets.except(io)
+    const sockets = mainIo.to(user._id.toString()).except(socketid)
 
     req.io = {
       send: sockets.emit,
-      sendAll: allSockets.emit,
       disconnect: sockets.disconnectSockets,
-      disconnectAll: allSockets.disconnectSockets,
+      sendTo(ev, rooms, data) {
+        mainIo.to(rooms).to(user._id.toString()).except(socketid).emit(ev, data)
+      },
     }
     req.user = user
     next()
