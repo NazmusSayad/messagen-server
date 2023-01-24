@@ -9,7 +9,11 @@ export interface SocketController {
     user: UserType
     event: string
     data: any
-    send: <T extends any>(data: T) => { status: 'success'; data: T }
+    send<T extends any>(data: T): { status: 'success'; data: T }
+    sendTo<T extends any>(
+      to: string | string[],
+      data: T
+    ): { status: 'success'; data: T }
   }): void | Promise<void>
 }
 
@@ -37,7 +41,7 @@ export class SocketRouter {
         user,
         event: ev,
         data,
-        send: (data) => {
+        send(data) {
           const body = {
             status: 'success' as any,
             data,
@@ -47,6 +51,17 @@ export class SocketRouter {
           done = true
 
           resolve(body)
+          return body
+        },
+
+        sendTo(this: Parameters<SocketController>[0], rooms, data) {
+          const body = { status: 'success' as any, data }
+          this.io
+            .to(rooms)
+            .to(this.user._id.toString())
+            .except(this.socket.id)
+            .emit('$' + this.event, this.send(data))
+
           return body
         },
       })
