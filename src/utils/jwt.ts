@@ -1,13 +1,10 @@
 import jsonwebtoken from 'jsonwebtoken'
+import User from '../model/User'
 const jwtTokenPrefix = 'Bearer '
 const error = new ReqError('Invalid token')
 
-export const generateUserJwt = (userId) => generateJwt({ userId })
-export const generateCookieJwt = (cookie) => generateJwt({ cookie })
-export const generateEmailJwt = (email) => generateJwt({ email }, '1d')
-
 export const generateJwt = (data, expiresIn = '90d') => {
-  return jsonwebtoken.sign({ ...data }, process.env.JWT_SECRET, { expiresIn })
+  return jsonwebtoken.sign({ data }, process.env.JWT_SECRET, { expiresIn })
 }
 
 export const parseJwt = (token: string) => {
@@ -23,4 +20,16 @@ export const parseJwt = (token: string) => {
   }
 
   return tokenInfo
+}
+
+export const parseUserFromJwt = async (token: string, verified = true) => {
+  const { data: userId, iat } = parseJwt(token)
+  const user = await User.findOne({ _id: userId, verified })
+
+  if (!user) throw new ReqError('No user found', 404)
+  if (iat < Math.ceil(new Date(user.passwordModifiedAt).valueOf() / 1000)) {
+    throw new ReqError('Auth token expired', 401)
+  }
+
+  return user
 }

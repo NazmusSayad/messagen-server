@@ -4,7 +4,7 @@ const router = express.Router()
 export default router
 import * as _tokenController from '../controller/auth/tokenController'
 import * as _authController from '../controller/auth/authController'
-import * as _userController from '../controller/user/userController'
+import * as _userController from '../controller/userController'
 
 const tokenController = catchError(_tokenController)
 const authController = catchError(_authController)
@@ -27,7 +27,8 @@ router.patch(
 router.patch(
   '/password',
   authController.checkPassword,
-  userController.updatePassword
+  userController.updatePassword,
+  tokenController.sendCookieToken
 )
 router
   .route('/email')

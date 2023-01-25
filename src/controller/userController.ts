@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import { checkType } from 'express-master'
 import * as bcrypt from 'bcrypt'
-import { UserRequest } from '../auth/tokenController'
+import { UserRequest } from './auth/tokenController'
 
 export const getUser = (req: UserRequest, res: Response) => {
   res.success({ user: req.user.getSafeInfo() })
@@ -57,11 +57,11 @@ export const updateUsername = async (req: UserRequest, res: Response) => {
   res.success({ user: req.user.getSafeInfo() })
 }
 
-export const updatePassword = async (req: UserRequest, res: Response) => {
+export const updatePassword = async (req: UserRequest, res: Response, next) => {
   const { new_password } = req.body
   checkType.string({ new_password })
 
   req.user.password = new_password
   await req.user.save()
-  res.success({ user: req.user.getSafeInfo() })
+  next()
 }

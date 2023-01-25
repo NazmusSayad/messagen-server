@@ -1,12 +1,12 @@
 import { getErrorInfo } from 'req-error'
 import { Namespace, Socket } from 'socket.io'
-import { UserType } from '../model/userSchema'
+import { UserDocument } from '../model/User'
 
 export interface SocketController {
   (info: {
     io: Namespace
     socket: Socket
-    user: UserType
+    user: UserDocument
     event: string
     data: any
     send<T extends any>(data: T): { status: 'success'; data: T }
@@ -29,7 +29,13 @@ export class SocketRouter {
     this.#io = io
   }
 
-  async runSocket(socket: Socket, user: UserType, ev: string, data, resolve) {
+  async runSocket(
+    socket: Socket,
+    user: UserDocument,
+    ev: string,
+    data,
+    resolve
+  ) {
     const callback = this.#listners[ev]
     if (!callback) return console.log('No callback found for', ev)
     let done = false

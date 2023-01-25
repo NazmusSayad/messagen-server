@@ -71,8 +71,9 @@ export default mongoose.model('user', userSchema) as Model<
   {},
   UserCustomMethods
 >
+
 interface UserCustomMethods {
-  getSafeInfo(): any
+  getSafeInfo(): UserType
 }
 
 export type UserDocument = HydratedDocument<UserType, UserCustomMethods>
