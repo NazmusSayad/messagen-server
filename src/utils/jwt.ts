@@ -1,13 +1,16 @@
 import jsonwebtoken from 'jsonwebtoken'
-import User from '../model/User'
+import User, { UserDocument } from '../model/User'
 const jwtTokenPrefix = 'Bearer '
 const error = new ReqError('Invalid token')
 
-export const generateJwt = (data, expiresIn = '90d') => {
-  return jsonwebtoken.sign({ data }, process.env.JWT_SECRET, { expiresIn })
+const generateJwt = (key: string, value, expiresIn = '90d'): string => {
+  const data = { [key]: value }
+  return jsonwebtoken.sign(data, process.env.JWT_SECRET, {
+    expiresIn,
+  })
 }
 
-export const parseJwt = (token: string) => {
+const parseJwt = (token: string) => {
   if (!token || typeof token !== 'string') throw error
   if (token.startsWith(jwtTokenPrefix)) {
     token = token.slice(jwtTokenPrefix.length)
@@ -22,14 +25,32 @@ export const parseJwt = (token: string) => {
   return tokenInfo
 }
 
-export const parseUserFromJwt = async (token: string, verified = true) => {
-  const { data: userId, iat } = parseJwt(token)
-  const user = await User.findOne({ _id: userId, verified })
+const createUserParser =
+  (key: string) =>
+  async (token: string, isVerified?: boolean): Promise<UserDocument> => {
+    const { [key]: userId, iat } = parseJwt(token)
 
-  if (!user) throw new ReqError('No user found', 404)
-  if (iat < Math.ceil(new Date(user.passwordModifiedAt).valueOf() / 1000)) {
-    throw new ReqError('Auth token expired', 401)
+    const query: any = { _id: userId }
+    if (isVerified != null) query.isVerified = isVerified
+    const user = await User.findOne(query)
+
+    if (!user) throw new ReqError('No user found', 401)
+    if (
+      user.passwordModifiedAt &&
+      iat < Math.ceil(new Date(user.passwordModifiedAt).valueOf() / 1000)
+    ) {
+      throw new ReqError('Auth token expired', 401)
+    }
+
+    return user
   }
 
-  return user
+const createUserTokenCreator = (key: string) => (user: UserDocument) => {
+  return generateJwt(key, user._id.toString())
 }
+
+export const generateCookieToken = createUserTokenCreator('cookie')
+export const generateAuthToken = createUserTokenCreator('token')
+
+export const parseUserFromCookie = createUserParser('cookie')
+export const parseUserFromToken = createUserParser('token')

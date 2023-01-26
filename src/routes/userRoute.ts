@@ -10,14 +10,16 @@ const tokenController = catchError(_tokenController)
 const authController = catchError(_authController)
 const userController = catchError(_userController)
 
-router.use(tokenController.checkAuthToken)
-
-router.route('/').get(userController.getUser).patch(userController.updateUser)
 router.post(
   '/delete-me',
+  tokenController.checkAuthTokenNotVerified,
   authController.checkPassword,
   userController.deleteUser
 )
+
+router.use(tokenController.checkAuthToken)
+
+router.route('/').get(userController.getUser).patch(userController.updateUser)
 
 router.patch(
   '/username',

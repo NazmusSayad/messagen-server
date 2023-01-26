@@ -10,6 +10,7 @@ const schema = new mongoose.Schema<GroupType>(
       type: mongoose.Types.ObjectId as any,
       required: true,
     },
+
     users: [mongoose.Types.ObjectId],
   },
   {

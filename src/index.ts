@@ -6,7 +6,7 @@ config()
 console.log('---', new Date().toString())
 
 if (process.env.NODE_ENV === 'development') {
-  console.clear()
+  // console.clear()
 }
 
 import './database'

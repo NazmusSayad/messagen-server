@@ -14,7 +14,7 @@ mainIo.on('connection', async (socket) => {
     const { authorization } = socket.handshake.auth
     checkType.string({ authorization })
 
-    const user = await jwt.parseUserFromJwt(authorization)
+    const user = await jwt.parseUserFromToken(authorization, true)
     socket.emit('ok', true)
     socket.join(user._id.toString())
 

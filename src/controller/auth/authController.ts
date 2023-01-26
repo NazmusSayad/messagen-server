@@ -1,47 +1,49 @@
-import { Request, Response } from 'express'
 import { checkType } from 'express-master'
-import { UserRequest } from './tokenController'
 import crypto from 'crypto'
 import * as bcrypt from 'bcrypt'
 import User from '../../model/User'
-import { getQueryFromLoginAndPass } from '../../utils/user'
+import { UserController } from '../types'
+import {
+  checkEmailAvailability,
+  getQueryFromLoginAndPass,
+} from '../../utils/user'
 
-export const signup = async (req: UserRequest, res, next) => {
+export const signup: UserController = async (req, res, next) => {
   const reqBody = req.getBody('name', 'username', 'email', 'password')
-  checkType.string({
-    name: reqBody.name,
-    email: reqBody.email,
-    username: reqBody.username,
-    password: reqBody.password,
-  })
+  checkType.string(reqBody)
+  await checkEmailAvailability(reqBody.email)
 
   const code = crypto.randomUUID().split('-')[0]
-  const user = await User.create({ ...reqBody, verificationCode: code })
+  const user = await User.create({
+    ...reqBody,
+    verificationCode: code,
+  })
 
   req.user = user
   next()
 }
 
-export const resendAccVerifyCode = async (req: UserRequest, res: Response) => {
+export const resendAccVerifyCode: UserController = async (req, res) => {
   req.user.verificationCode = crypto.randomUUID().split('-')[0]
   await req.user.save()
   res.success({ message: `An otp code sent to your email: ${req.user.email}` })
 }
 
-export const verifyAccount = async (req: UserRequest, res: Response) => {
+export const verifyAccount: UserController = async (req, res) => {
   const { code } = req.body
   checkType.string({ code })
 
   const isOk = await bcrypt.compare(code, req.user.verificationCode)
   if (!isOk) throw new ReqError("Entered code doesn't matched!")
 
-  req.user.verified = true
+  req.user.isVerified = true
   req.user.verificationCode = undefined
   await req.user.save()
+
   res.success({ user: req.user.getSafeInfo() })
 }
 
-export const login = async (req: UserRequest, res, next) => {
+export const login: UserController = async (req, res, next) => {
   const { login, password } = req.body
   checkType.string({ login, password })
 
@@ -54,7 +56,7 @@ export const login = async (req: UserRequest, res, next) => {
   next()
 }
 
-export const requestPassReset = async (req: Request, res: Response) => {
+export const requestPassReset: UserController = async (req, res) => {
   const { login } = req.body
   checkType.string({ login })
 
@@ -69,7 +71,7 @@ export const requestPassReset = async (req: Request, res: Response) => {
   })
 }
 
-export const resetPassword = async (req: UserRequest, res, next) => {
+export const resetPassword: UserController = async (req, res, next) => {
   const { login, code, new_password } = req.body
   checkType.string({ login, code, new_password })
 
@@ -90,7 +92,7 @@ export const resetPassword = async (req: UserRequest, res, next) => {
   next()
 }
 
-export const checkPassword = async (req: UserRequest, res, next) => {
+export const checkPassword: UserController = async (req, res, next) => {
   const { password } = req.body
   checkType.string({ password })
 

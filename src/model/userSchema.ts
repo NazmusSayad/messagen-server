@@ -3,17 +3,19 @@ import * as common from './common'
 
 export interface UserType {
   _id: mongoose.Types.ObjectId
+  createdAt: Date
+
   name: string
   username: string
   email: string
   avatar: string
   password: string
-  passwordModifiedAt: Date
-  createdAt: Date
-  verified: boolean
-  pendingEmail: string
-  recoverCode: string
-  verificationCode: string
+  isVerified: boolean
+
+  passwordModifiedAt?: Date
+  pendingEmail?: string
+  recoverCode?: string
+  verificationCode?: string
 }
 
 export default new mongoose.Schema<UserType>(
@@ -43,23 +45,25 @@ export default new mongoose.Schema<UserType>(
     },
     passwordModifiedAt: {
       type: Date,
-      required: true,
-      default: Date.now,
     },
     createdAt: {
       type: Date,
       required: true,
       default: Date.now,
     },
-    verified: {
+    isVerified: {
       type: Boolean,
       default: false,
       required: true,
     },
 
-    pendingEmail: { ...common.email, required: false } as any,
     recoverCode: { type: String },
     verificationCode: { type: String },
+    pendingEmail: {
+      ...common.email,
+      required: false,
+      unique: false,
+    } as any,
   },
   {
     versionKey: false,

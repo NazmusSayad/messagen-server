@@ -1,18 +1,26 @@
-import { Response } from 'express'
-import { UserRequest } from './auth/tokenController'
 import Friend from '../model/Friend'
 import { checkType } from 'express-master'
 import { getSuccess } from '../utils'
+import { userSafeInfo } from '../model/User'
+import { UserController } from './types'
 
-export const getAllFriends = async (req: UserRequest, res: Response) => {
-  const friends = await Friend.find({
-    $or: [{ user: req.user }, { friend: req.user }],
-  })
+export const getAllFriends: UserController = async (req, res) => {
+  const friends = await Promise.all([
+    Friend.find({ user: req.user }).populate({
+      path: 'friend',
+      select: userSafeInfo,
+    }),
 
-  res.success({ friends })
+    Friend.find({ friend: req.user }).populate({
+      path: 'user',
+      select: userSafeInfo,
+    }),
+  ])
+
+  res.success({ friends: friends.flat(1) })
 }
 
-export const addFriend = async (req: UserRequest, res: Response) => {
+export const addFriend: UserController = async (req, res) => {
   const friendId = req.body.friend
   checkType.string({ friend: friendId })
   if (req.user._id.toString() === friendId) {
@@ -25,8 +33,8 @@ export const addFriend = async (req: UserRequest, res: Response) => {
   req.io.sendTo('$friend/post', friendId, data)
 }
 
-export const removeFriend = async (req: UserRequest, res: Response) => {
-  const friendId = req.params.id
+export const removeFriend: UserController = async (req, res) => {
+  const { friendId } = req.params
   checkType.string({ friend: friendId })
 
   const friend = await Friend.deleteOne({ user: req.user, friend: friendId })
@@ -38,8 +46,8 @@ export const removeFriend = async (req: UserRequest, res: Response) => {
   req.io.sendTo('$friend/delete', friendId, getSuccess({ friend: friendId }))
 }
 
-export const acceptFriend = async (req: UserRequest, res: Response) => {
-  const friendId = req.params.id
+export const acceptFriend: UserController = async (req, res) => {
+  const { friendId } = req.params
   checkType.string({ friend: friendId })
 
   const friend = await Friend.findOne({

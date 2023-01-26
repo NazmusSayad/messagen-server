@@ -1,18 +1,8 @@
-import { Response, Request } from 'express'
 import { checkType } from 'express-master'
 import nodeEnv from 'manual-node-env'
 import * as jwt from '../../utils/jwt'
-import { UserDocument } from '../../model/User'
 import { mainIo } from '../../socket'
-
-export interface UserRequest extends Request {
-  user: UserDocument
-  io: {
-    send: typeof mainIo.emit
-    sendTo(ev: string, rooms: string | [string], data: unknown): void
-    disconnect: typeof mainIo.disconnectSockets
-  }
-}
+import { UserController } from '../types'
 
 const cookieOptions: any = {
   secure: !nodeEnv.isDev,
@@ -20,36 +10,37 @@ const cookieOptions: any = {
   maxAge: 86400000 /* 1 day -> miliseconds */ * 30,
 }
 
-export const sendCookieToken = (req: UserRequest, res: Response) => {
+export const sendCookieToken: UserController = (req, res) => {
   res.cookie('hasToken', true, cookieOptions)
-  res.cookie('token', jwt.generateJwt(req.user._id), {
+  res.cookie('token', jwt.generateCookieToken(req.user), {
     ...cookieOptions,
     httpOnly: true,
   })
 
-  const token = jwt.generateJwt(req.user._id)
+  const token = jwt.generateAuthToken(req.user)
   res.success({ user: req.user.getSafeInfo(), token })
 }
 
-export const clearCookieToken = (req, res: Response) => {
+export const clearCookieToken: UserController = (req, res) => {
   res.clearCookie('token')
   res.clearCookie('hasToken')
   res.status(204).end()
 }
 
-export const getAuthToken = async (req: UserRequest, res: Response, next) => {
+export const getAuthToken: UserController = async (req, res, next) => {
   const { token } = req.cookies
   checkType.string({ token })
-  req.user = await jwt.parseUserFromJwt(token)
+  req.user = await jwt.parseUserFromCookie(token)
   next()
 }
 
 const checkAuthFactory =
-  (verified: boolean) => async (req: UserRequest, res, next) => {
+  (isVerified: boolean): UserController =>
+  async (req, res, next) => {
     const { authorization, socketid } = req.headers
     checkType.string({ authorization })
 
-    const user = await jwt.parseUserFromJwt(authorization, verified)
+    const user = await jwt.parseUserFromToken(authorization, isVerified)
     const sockets = mainIo.to(user._id.toString()).except(socketid)
 
     req.user = user

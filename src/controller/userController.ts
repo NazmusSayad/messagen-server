@@ -1,13 +1,13 @@
-import { Response } from 'express'
 import { checkType } from 'express-master'
 import * as bcrypt from 'bcrypt'
-import { UserRequest } from './auth/tokenController'
+import { UserController } from './types'
+import { checkEmailAvailability } from '../utils/user'
 
-export const getUser = (req: UserRequest, res: Response) => {
+export const getUser: UserController = (req, res) => {
   res.success({ user: req.user.getSafeInfo() })
 }
 
-export const updateUser = async (req: UserRequest, res: Response) => {
+export const updateUser: UserController = async (req, res) => {
   const reqBody = req.getBody('name')
   checkType.optional.string({ name: reqBody.name })
 
@@ -16,16 +16,17 @@ export const updateUser = async (req: UserRequest, res: Response) => {
   res.success({ user: req.user.getSafeInfo() })
 }
 
-export const deleteUser = async (req: UserRequest, res: Response) => {
+export const deleteUser: UserController = async (req, res) => {
   await req.user.delete()
   res.status(204).end()
 }
 
-export const updateEmailRequest = async (req: UserRequest, res: Response) => {
+export const updateEmailRequest: UserController = async (req, res) => {
   const { email } = req.body
   checkType.string({ email })
-  const code = crypto.randomUUID().split('-')[0]
+  await checkEmailAvailability(email)
 
+  const code = crypto.randomUUID().split('-')[0]
   req.user.verificationCode = code
   req.user.pendingEmail = email
   await req.user.save()
@@ -33,7 +34,7 @@ export const updateEmailRequest = async (req: UserRequest, res: Response) => {
   res.success({ message: `An otp code sent to your email: ${email}` })
 }
 
-export const updateEmail = async (req: UserRequest, res: Response) => {
+export const updateEmail: UserController = async (req, res) => {
   const { code } = req.body
   checkType.string({ code })
 
@@ -48,7 +49,7 @@ export const updateEmail = async (req: UserRequest, res: Response) => {
   res.success({ user: req.user.getSafeInfo() })
 }
 
-export const updateUsername = async (req: UserRequest, res: Response) => {
+export const updateUsername: UserController = async (req, res) => {
   const { username } = req.body
   checkType.string({ username })
 
@@ -57,7 +58,7 @@ export const updateUsername = async (req: UserRequest, res: Response) => {
   res.success({ user: req.user.getSafeInfo() })
 }
 
-export const updatePassword = async (req: UserRequest, res: Response, next) => {
+export const updatePassword: UserController = async (req, res, next) => {
   const { new_password } = req.body
   checkType.string({ new_password })
 

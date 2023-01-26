@@ -12,10 +12,14 @@ const schema = new mongoose.Schema<FriendType>(
     user: {
       type: mongoose.Types.ObjectId as any,
       required: true,
+      populate: true,
+      ref: 'user',
     },
     friend: {
       type: mongoose.Types.ObjectId as any,
       required: true,
+      populate: true,
+      ref: 'user',
     },
     accepted: {
       type: Boolean,
