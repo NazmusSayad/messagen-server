@@ -4,23 +4,31 @@ const router = express.Router()
 export default router
 
 import * as _tokenController from '../controller/auth/tokenController'
-import * as _groupController from '../controller/groupController'
+import * as _groupController from '../controller/group/groupController'
+import * as _groupCRUDController from '../controller/group/groupCRUDController'
 
 const tokenController = catchError(_tokenController)
 const groupController = catchError(_groupController)
+const groupCRUDController = catchError(_groupCRUDController)
 
 router.use(tokenController.checkAuthToken)
 
 router
   .route('/')
-  .get(groupController.getGroups)
-  .post(groupController.createGroup)
+  .get(groupCRUDController.getGroups)
+  .post(groupCRUDController.createGroup)
 
+router.all('/:groupId*', groupController.setGroup)
+router.post(
+  '/:groupId/members/:userId/accept',
+  groupController.acceptInvitation
+)
+
+router.use(groupController.checkIfUserIsOwner)
 router
   .route('/:groupId')
-  .patch(groupController.updateGroup)
-  .delete(groupController.deleteGroup)
+  .patch(groupCRUDController.updateGroup)
+  .delete(groupCRUDController.deleteGroup)
 
-router.post('/members', groupController.inviteUser)
-router.delete('/members/:userId', groupController.removeUser)
-router.post('/members/:userId/accept', groupController.acceptInvitation)
+router.post('/:groupId/members', groupController.inviteUser)
+router.delete('/:groupId/members/:userId', groupController.removeUser)

@@ -11,6 +11,6 @@ export interface UserRequest extends Request {
   }
 }
 
-export interface UserController {
-  (req: UserRequest, res: Response, next: NextFunction): void
+export interface UserController<T = {}> {
+  (req: UserRequest & T, res: Response, next: NextFunction): void
 }

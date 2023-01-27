@@ -6,6 +6,9 @@ const schema = new mongoose.Schema<GroupType>(
       type: String,
       required: true,
     },
+    avatar: {
+      type: String,
+    },
     owner: {
       type: mongoose.Types.ObjectId as any,
       required: true,
@@ -19,6 +22,11 @@ const schema = new mongoose.Schema<GroupType>(
   }
 )
 
+schema.post('remove', function () {
+  // TODO: delete all the messages when group is deleted
+  console.log(this)
+})
+
 export default mongoose.model('group', schema) as Model<
   GroupType,
   {},
@@ -28,6 +36,7 @@ export default mongoose.model('group', schema) as Model<
 interface GroupType {
   _id: mongoose.Types.ObjectId
   name: string
+  avatar: string
   owner: mongoose.Types.ObjectId
   users: mongoose.Types.ObjectId[]
 }
