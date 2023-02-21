@@ -7,17 +7,20 @@ import cookieParser from 'cookie-parser'
 import mongoSanitize from 'express-mongo-sanitize'
 import { requestLimit } from './core'
 import router from './router'
+
 const app = express()
+const allowedOrigins = Object.entries(process.env)
+  .filter(([name]) => {
+    return name.startsWith('CLIENT')
+  })
+  .map(([, value]) => value)
+console.log(allowedOrigins)
 
 // Safety
 app.use(
   cors({
     credentials: true,
-    origin: Object.entries(process.env)
-      .filter(([name]) => {
-        return name.startsWith('CLIENT')
-      })
-      .map(([, value]) => value),
+    origin: allowedOrigins,
   })
 )
 app.use(helmet())
