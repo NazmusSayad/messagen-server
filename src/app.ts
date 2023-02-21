@@ -18,7 +18,7 @@ app.use(
         return name.startsWith('CLIENT')
       })
       .map(([, value]) => value),
-  })
+  }) 
 )
 app.use(helmet())
 app.use(requestLimit({ max: 1000 }))
