@@ -13,11 +13,7 @@ const app = express()
 app.use(
   cors({
     credentials: true,
-    origin: Object.entries(process.env)
-      .filter(([name]) => {
-        return name.startsWith('CLIENT')
-      })
-      .map(([, value]) => value),
+    origin: /.*/,
   })
 )
 app.use(helmet())
