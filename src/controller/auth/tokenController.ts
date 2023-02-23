@@ -22,7 +22,7 @@ export const clearCookieToken: UserController = (req, res) => {
 
 export const getAuthToken: UserController = async (req, res, next) => {
   const { cookieToken } = req.cookies
-  checkType.string({ cookieToken })
+  checkType.string({ cookieToken }, { statusCode: 401 })
   req.user = await jwt.parseUserFromCookie(cookieToken)
   next()
 }
@@ -31,7 +31,7 @@ const checkAuthFactory =
   (isVerified: boolean): UserController =>
   async (req, res, next) => {
     const { authorization, socketid } = req.headers
-    checkType.string({ authorization })
+    checkType.string({ authorization }, { statusCode: 401 })
 
     const user = await jwt.parseUserFromToken(authorization, isVerified)
     const sockets = mainIo.to(user._id.toString()).except(socketid)
