@@ -1,7 +1,7 @@
-import { checkType } from 'express-master'
 import * as bcrypt from 'bcrypt'
 import { UserController } from './types'
 import { checkEmailAvailability } from '../utils/user'
+import { checkType } from 'express-master'
 
 export const getUser: UserController = (req, res) => {
   res.success({ user: req.user.getSafeInfo() })

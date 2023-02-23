@@ -1,7 +1,7 @@
-import checkType from '../../checkType/index'
 import * as jwt from '../../utils/jwt'
 import { mainIo } from '../../socket'
 import { UserController } from '../types'
+import { checkType } from 'express-master'
 
 export const sendCookieToken: UserController = (req, res) => {
   res.cookie('cookieToken', jwt.generateCookieToken(req.user), {
