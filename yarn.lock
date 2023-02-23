@@ -1157,10 +1157,10 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
-express-master@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/express-master/-/express-master-3.0.4.tgz#7afca0698e3ccff35a268fa1a56d630325ef4b1a"
-  integrity sha512-USBKT/jU/dmGeVViH1UI/vFImEtrbKCj/fapT0Y6ub4FX3FY6h81gJ16AKPBnTIX3hXeN3+n2VcFcLAa1mxjKA==
+express-master@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/express-master/-/express-master-3.0.5.tgz#d150f5a6be21f37c203922a2ea3282f5cda1d939"
+  integrity sha512-lPp8JNg7a38KENOyTufw7SLRp7Wwxn5S1Ng2HtswK9SxRMhGt5BrnxqZONN9mAq8T303my1IXsGHOMvC6PJYyg==
 
 express-mongo-sanitize@^2.2.0:
   version "2.2.0"

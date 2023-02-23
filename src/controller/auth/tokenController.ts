@@ -1,4 +1,4 @@
-import { checkType } from 'express-master'
+import checkType from '../../checkType/index'
 import * as jwt from '../../utils/jwt'
 import { mainIo } from '../../socket'
 import { UserController } from '../types'
