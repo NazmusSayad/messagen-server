@@ -4,7 +4,7 @@ import { mainIo } from '../../socket'
 import { UserController } from '../types'
 
 export const sendCookieToken: UserController = (req, res) => {
-  res.cookie('token', jwt.generateCookieToken(req.user), {
+  res.cookie('cookieToken', jwt.generateCookieToken(req.user), {
     secure: true,
     sameSite: 'none',
     httpOnly: true,
@@ -16,14 +16,14 @@ export const sendCookieToken: UserController = (req, res) => {
 }
 
 export const clearCookieToken: UserController = (req, res) => {
-  res.clearCookie('token')
+  res.clearCookie('cookieToken')
   res.status(204).end()
 }
 
 export const getAuthToken: UserController = async (req, res, next) => {
-  const { token } = req.cookies
-  checkType.string({ token })
-  req.user = await jwt.parseUserFromCookie(token)
+  const { cookieToken } = req.cookies
+  checkType.string({ cookieToken })
+  req.user = await jwt.parseUserFromCookie(cookieToken)
   next()
 }
 
