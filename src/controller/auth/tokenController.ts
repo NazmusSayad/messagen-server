@@ -1,20 +1,14 @@
 import { checkType } from 'express-master'
-import nodeEnv from 'manual-node-env'
 import * as jwt from '../../utils/jwt'
 import { mainIo } from '../../socket'
 import { UserController } from '../types'
 
-const cookieOptions: any = {
-  secure: !nodeEnv.isDev,
-  sameSite: 'strict',
-  maxAge: 86400000 /* 1 day -> miliseconds */ * 30,
-}
-
 export const sendCookieToken: UserController = (req, res) => {
-  res.cookie('hasToken', true, cookieOptions)
   res.cookie('token', jwt.generateCookieToken(req.user), {
-    ...cookieOptions,
+    secure: true,
+    sameSite: 'none',
     httpOnly: true,
+    maxAge: 86400000 /* 1 day -> miliseconds */ * 30,
   })
 
   const token = jwt.generateAuthToken(req.user)
@@ -23,7 +17,6 @@ export const sendCookieToken: UserController = (req, res) => {
 
 export const clearCookieToken: UserController = (req, res) => {
   res.clearCookie('token')
-  res.clearCookie('hasToken')
   res.status(204).end()
 }
 
