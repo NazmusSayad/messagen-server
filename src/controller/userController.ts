@@ -2,6 +2,7 @@ import * as bcrypt from 'bcrypt'
 import { UserController } from './types'
 import { checkEmailAvailability } from '../utils/user'
 import { checkType } from 'express-master'
+import User from '../model/User'
 
 export const getUser: UserController = (req, res) => {
   res.success({ user: req.user.getSafeInfo() })
@@ -65,4 +66,33 @@ export const updatePassword: UserController = async (req, res, next) => {
   req.user.password = new_password
   await req.user.save()
   next()
+}
+
+export const searchUser: UserController = async (req, res) => {
+  const { username } = req.query
+  checkType.string({ username })
+
+  const matchedUsers = await User.find({
+    username: { $regex: username, $options: 'i' },
+  })
+    .select('name username avatar createdAt')
+    .limit(20)
+    .sort({ username: 1 })
+    .lean()
+
+  const result = []
+
+  matchedUsers.forEach((user) => {
+    if (user._id.toString() === req.user._id.toString()) {
+      return
+    }
+
+    if (user.username === username) {
+      result.unshift(user)
+    }
+
+    result.push(user)
+  })
+
+  res.success({ users: result })
 }

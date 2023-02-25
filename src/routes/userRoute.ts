@@ -21,6 +21,8 @@ router.use(tokenController.checkAuthToken)
 
 router.route('/').get(userController.getUser).patch(userController.updateUser)
 
+router.get('/search', userController.searchUser)
+
 router.patch(
   '/username',
   authController.checkPassword,

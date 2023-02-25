@@ -51,8 +51,8 @@ export const acceptFriend: UserController = async (req, res) => {
   checkType.string({ friend: friendId })
 
   const friend = await Friend.findOne({
-    user: req.user,
-    friend: friendId,
+    user: friendId,
+    friend: req.user,
     accepted: false,
   })
   if (!friend) throw new ReqError('No pending request found with this info')
