@@ -1,7 +1,7 @@
 import Friend from '../model/Friend'
 import { checkType } from 'express-master'
 import { getSuccess } from '../utils'
-import { userSafeInfo } from '../model/User'
+import User, { userSafeInfo } from '../model/User'
 import { UserController } from './types'
 
 export const getAllFriends: UserController = async (req, res) => {
@@ -27,7 +27,12 @@ export const addFriend: UserController = async (req, res) => {
     throw new ReqError("You can't add yourself as a friend")
   }
 
-  const friend = await Friend.create({ user: req.user, friend: friendId })
+  const userFriendDoc = await User.findById(friendId)
+  if (!userFriendDoc) throw new ReqError('No friend found')
+  const friend = await Friend.create({
+    user: req.user._id,
+    friend: userFriendDoc,
+  })
 
   const data = res.success({ friend })
   req.io.sendTo('$friend/post', friendId, data)
@@ -37,7 +42,12 @@ export const removeFriend: UserController = async (req, res) => {
   const { friendId } = req.params
   checkType.string({ friend: friendId })
 
-  const friend = await Friend.deleteOne({ user: req.user, friend: friendId })
+  const friend = await Friend.deleteOne({
+    $or: [
+      { user: req.user._id, friend: friendId },
+      { friend: req.user._id, user: friendId },
+    ],
+  })
   if (!friend.deletedCount) {
     throw new ReqError('No friend found with this id')
   }
@@ -52,12 +62,18 @@ export const acceptFriend: UserController = async (req, res) => {
 
   const friend = await Friend.findOne({
     user: friendId,
-    friend: req.user,
+    friend: req.user._id,
     accepted: false,
   })
   if (!friend) throw new ReqError('No pending request found with this info')
 
   friend.accepted = true
-  const data = res.success({ friend: await friend.save() })
+  await friend.save()
+  const populatedDoc = await friend.populate({
+    path: 'user',
+    select: userSafeInfo,
+  })
+
+  const data = res.success({ friend: populatedDoc })
   req.io.sendTo('$friend/accept', friendId, data)
 }
