@@ -1,0 +1,20 @@
+ M src/config/index.ts
+ D src/controller/friendController.ts
+ D src/controller/group/groupCRUDController.ts
+ D src/controller/group/groupController.ts
+ D src/controller/group/utils.ts
+ M src/controller/message/messageSocket.ts
+ D src/model/Friend.ts
+ D src/model/Group.ts
+ M src/model/Message.ts
+ M src/model/User.ts
+ M src/router.ts
+ D src/routes/friendRoute.ts
+ D src/routes/groupRoute.ts
+ M src/routes/socketRoute.ts
+ M tsconfig.json
+?? contacts
+?? src/controller/contact/
+?? src/model/Contact.ts
+?? src/routes/contactRoute.ts
+

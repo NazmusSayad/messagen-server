@@ -6,7 +6,8 @@ import mail from '../utils/mail'
 import { getFieldsFromObject } from '../utils'
 import Friend from './Friend'
 import Message from './Message'
-import Group from './Group'
+import Group from './Contact'
+import { USER_SAFE_INFO } from '../config'
 
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
@@ -60,32 +61,32 @@ userSchema.post('save', function () {
 })
 
 userSchema.post('remove', function (this: UserDocument) {
-  ;(async () => {
-    const [friends, groups] = await Promise.all([
-      Friend.find({ $or: [{ user: this._id }, { friend: this._id }] }),
-      Group.find({ users: { $elemMatch: this._id } }),
-    ])
-
-    console.log(friends, groups)
-
-    for (let friend of friends) {
-      await Promise.all([Message.deleteMany({ to: friend._id })])
-      await friend.delete()
-    }
-  })().catch(() => {})
+  // TODO:
 })
 
 userSchema.methods.getSafeInfo = function () {
-  return getFieldsFromObject(this, ...userSafeInfo.split(' '))
+  return getFieldsFromObject(this, ...USER_SAFE_INFO.split(' '))
 }
 
-export const userSafeInfo = '_id name username email isVerified avatar'
+userSchema.statics.checkUserExists = function (id, getUser = false) {
+  const User = this
+  return new Promise(async (res, rej) => {
+    try {
+      const query = User.findById(id)
+      const user = await (getUser ? query : query)
 
-export default mongoose.model('user', userSchema) as Model<
-  UserType,
-  {},
-  UserCustomMethods
->
+      if (!user) throw new ReqError('No user found with this information')
+      res(user)
+    } catch (err) {
+      rej(err)
+    }
+  })
+}
+
+export default mongoose.model('user', userSchema) as UserModel
+interface UserModel extends Model<UserType, {}, UserCustomMethods> {
+  checkUserExists(id: string, getUser?: boolean): Promise<UserDocument>
+}
 
 interface UserCustomMethods {
   getSafeInfo(): UserType
