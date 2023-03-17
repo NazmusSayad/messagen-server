@@ -1,29 +1,47 @@
 import { checkType } from 'express-master'
-import Group, { GroupDocument } from '../../model/Group'
+import Group, { GroupDocument, POPULATE_GROUP } from '../../model/Group'
 import { UserController } from '../types'
+import { getAddedUser, getPendingUser, isGroupOwner } from './utils'
 
 export type GroupController = UserController<{
   $group: GroupDocument
 }>
 
-export const getGroups: UserController = async (req, res, next) => {}
+export const getGroups: UserController = async (req, res, next) => {
+  const usersQuery = { users: { $elemMatch: { user: req.user } } }
+  const groups = await Group.find({
+    $or: [{ owner: req.user }, usersQuery],
+  }).populate(POPULATE_GROUP)
 
-export const createGroup: UserController = async (req, res) => {
-  const reqBody = req.getBody('name', 'avatar')
-  checkType.string(reqBody)
-  const group = await Group.create({ ...reqBody, owner: req.user })
-  res.success({ group })
+  res.success({ groups: groups })
 }
 
-export const updateGroup: GroupController = async (req, res) => {
-  const reqBody = req.getBody('name', 'avatar')
-  checkType.string(reqBody)
-  req.$group.set(reqBody)
-  const group = await req.$group.save()
-  res.success({ group })
+export const createGroup: GroupController = async (req, res, next) => {
+  const { name, avatar } = req.body
+  checkType.string({ name })
+  checkType.optional.string({ avatar })
+
+  req.$group = new Group({ name, avatar, owner: req.user })
+  next()
+}
+
+export const updateGroup: GroupController = async (req, res, next) => {
+  const { name, avatar } = req.body
+  checkType.string({ name })
+  checkType.optional.string({ avatar })
+
+  req.$group.set({ name, avatar })
+  next()
 }
 
 export const deleteGroup: GroupController = async (req, res) => {
-  await req.$group.remove()
+  if (isGroupOwner(req)) {
+    await req.$group.remove()
+  } else {
+    const user = getAddedUser(req.$group.users, req.user._id)
+    user.remove()
+    await req.$group.save()
+  }
+
   res.status(204).end()
 }

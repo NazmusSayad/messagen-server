@@ -33,5 +33,10 @@ const schema = new mongoose.Schema<FriendType>(
   }
 )
 
+schema.post('remove', function () {
+  // TODO: delete all the messages when relations is deleted
+  console.log(this)
+})
+
 schema.index({ user: 1, friend: 1 }, { unique: true })
 export default mongoose.model('friend', schema)

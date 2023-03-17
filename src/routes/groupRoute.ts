@@ -16,19 +16,26 @@ router.use(tokenController.checkAuthToken)
 router
   .route('/')
   .get(groupCRUDController.getGroups)
-  .post(groupCRUDController.createGroup)
+  .post(groupCRUDController.createGroup, groupController.saveAndSendGroup)
 
 router.all('/:groupId*', groupController.setGroup)
-router.post(
-  '/:groupId/members/:userId/accept',
-  groupController.acceptInvitation
-)
-
-router.use(groupController.checkIfUserIsOwner)
 router
-  .route('/:groupId')
-  .patch(groupCRUDController.updateGroup)
-  .delete(groupCRUDController.deleteGroup)
+  .route('/:groupId/accept')
+  .patch(groupController.acceptInvitation, groupController.saveAndSendGroup)
 
-router.post('/:groupId/members', groupController.inviteUser)
-router.delete('/:groupId/members/:userId', groupController.removeUser)
+router.route('/:groupId').delete(groupCRUDController.deleteGroup)
+
+// Only for owner
+router.use(groupController.checkIfUserIsOwner)
+router.route('/:groupId').delete(groupCRUDController.deleteGroup)
+
+router.post(
+  '/:groupId/members',
+  groupController.inviteUser,
+  groupController.saveAndSendGroup
+)
+router.delete(
+  '/:groupId/members/:userId',
+  groupController.removeUser,
+  groupController.saveAndSendGroup
+)

@@ -8,9 +8,13 @@ const schema = new mongoose.Schema<MessageType>(
       populate: true,
       ref: 'user',
     },
-    to: {
+
+    friend: {
       type: mongoose.Types.ObjectId as any,
-      required: true,
+      select: false,
+    },
+    group: {
+      type: mongoose.Types.ObjectId as any,
       select: false,
     },
 
@@ -35,7 +39,8 @@ export default mongoose.model('message', schema) as Model<
 interface MessageType {
   _id: mongoose.Types.ObjectId
   from: mongoose.Types.ObjectId
-  to: mongoose.Types.ObjectId
+  group: mongoose.Types.ObjectId
+  friend: mongoose.Types.ObjectId
   text: string
   images: string[]
 }

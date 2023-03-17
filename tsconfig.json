@@ -5,7 +5,8 @@
     "outDir": "./dist",
     "removeComments": true,
     "esModuleInterop": true,
-    "inlineSourceMap": true
+    "inlineSourceMap": true,
+    "noImplicitAny": false
   },
   "include": ["./src"],
   "exclude": ["./node_modules"]

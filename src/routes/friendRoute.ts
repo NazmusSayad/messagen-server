@@ -18,4 +18,4 @@ router
 
 router.delete('/:friendId', friendController.removeFriend)
 
-router.patch('/accept/:friendId', friendController.acceptFriend)
+router.patch('/:friendId/accept', friendController.acceptFriend)
