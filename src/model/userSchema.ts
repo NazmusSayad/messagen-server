@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import * as common from './common'
+import { createdAtField } from './utils'
 
 export interface UserType {
   _id: mongoose.Types.ObjectId
@@ -46,17 +47,13 @@ export default new mongoose.Schema<UserType>(
     passwordModifiedAt: {
       type: Date,
     },
-    createdAt: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
     isVerified: {
       type: Boolean,
       default: false,
       required: true,
     },
 
+    createdAt: createdAtField(),
     recoverCode: { type: String },
     verificationCode: { type: String },
     pendingEmail: {

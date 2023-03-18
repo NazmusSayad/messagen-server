@@ -1,4 +1,5 @@
 import mongoose, { HydratedDocument, Model } from 'mongoose'
+import { createdAtField } from './utils'
 
 const schema = new mongoose.Schema<MessageType>(
   {
@@ -14,12 +15,14 @@ const schema = new mongoose.Schema<MessageType>(
       select: false,
     },
 
+    images: [String],
     text: {
       type: String,
       maxlength: 300,
       trim: true,
     },
-    images: [String],
+
+    createdAt: createdAtField(),
   },
   {
     versionKey: false,
@@ -38,6 +41,7 @@ interface MessageType {
   to: mongoose.Types.ObjectId
   text: string
   images: string[]
+  createdAt: Date
 }
 
 interface MessageCustomMethods {}

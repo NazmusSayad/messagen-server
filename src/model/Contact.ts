@@ -1,5 +1,6 @@
 import mongoose, { HydratedDocument, Model, ObjectId, Types } from 'mongoose'
 import { USER_PUBLIC_INFO } from '../config'
+import { createdAtField } from './utils'
 
 const contactUsersSchema = new mongoose.Schema<ContactUsersType>({
   user: {
@@ -30,6 +31,7 @@ const schema = new mongoose.Schema<ContactType>(
     },
 
     users: [contactUsersSchema],
+    createdAt: createdAtField(),
   },
   {
     versionKey: false,
@@ -129,6 +131,7 @@ interface ContactType {
   avatar: string
   owner: mongoose.Types.ObjectId
   users: ContactUsersType[]
+  createdAt: Date
 }
 
 type ContactCustomMethods = UserDocumentProps & {}
