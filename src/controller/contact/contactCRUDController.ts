@@ -41,7 +41,7 @@ export const createContact: GroupController = async (req, res, next) => {
   if (user) {
     checkType.string({ user })
     await User.checkUserExists(user)
-    await Contact.checkUserNotExists(user, req.user._id)
+    await Contact.checkUsersNotExists(user, req.user._id)
 
     req.$contact = new Contact({ owner: req.user._id, users: [{ user }] })
   } else {

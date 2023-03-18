@@ -9,13 +9,11 @@ export const getMessage: SocketController = async (info) => {
 
 export const createMessage: SocketController = async (info) => {
   const { to, text, images } = info.data
-  checkType.string({ to })
-  if (!text && !images) {
-    throw new ReqError('Message must not be empty')
-  }
+  if (!text && !images) throw new ReqError('Message must not be empty')
 
-  const isExists = await Contact.findById(to)
-  if (!isExists) throw new ReqError('Contact does not exists')
+  checkType.string({ to })
+  checkType.optional.string({ text })
+  await Contact.checkContactIsReady(info.user._id, to)
 
   const message = await Message.create({
     from: info.user,

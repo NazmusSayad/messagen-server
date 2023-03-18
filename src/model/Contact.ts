@@ -1,4 +1,4 @@
-import mongoose, { HydratedDocument, Model, Types } from 'mongoose'
+import mongoose, { HydratedDocument, Model, ObjectId, Types } from 'mongoose'
 import { USER_PUBLIC_INFO } from '../config'
 
 const contactUsersSchema = new mongoose.Schema<ContactUsersType>({
@@ -56,28 +56,46 @@ schema.post('remove', function () {
   console.log(this)
 })
 
-schema.statics.checkUserNotExists = function (user1, user2) {
+schema.statics.checkContactIsReady = async function (userId, _id) {
+  _id = _id.toString()
+  userId = userId.toString()
+  type T = Parameters<typeof this.findOne>[0]
+
+  const friendFilter: T = {
+    _id,
+    name: { $exists: false },
+    users: { $size: 1, $elemMatch: { accepted: true } },
+    $or: [{ owner: userId }, { users: { $elemMatch: { user: userId } } }],
+  }
+
+  const groupFilter: T = {
+    _id,
+    name: { $exists: true },
+    $or: [
+      { owner: userId },
+      { users: { $elemMatch: { user: userId, accepted: true } } },
+    ],
+  }
+
+  const isExists = await this.exists({ $or: [friendFilter, groupFilter] })
+  if (!isExists) throw new ReqError('Recipient does not exist or invalid')
+}
+
+schema.statics.checkUserNotExists = async function (user1, user2) {
   const Contact = this
   user1 = user1.toString()
   user2 = user2.toString()
 
-  return new Promise(async (res, rej) => {
-    try {
-      type T = Parameters<typeof Contact.findOne>[0]
-      const filter: T = {
-        $or: [
-          { owner: user1, users: { $elemMatch: { user: user2 } } },
-          { owner: user2, users: { $elemMatch: { user: user1 } } },
-        ],
-      }
+  type T = Parameters<typeof Contact.findOne>[0]
+  const filter: T = {
+    $or: [
+      { owner: user1, users: { $elemMatch: { user: user2 } } },
+      { owner: user2, users: { $elemMatch: { user: user1 } } },
+    ],
+  }
 
-      const user = await Contact.findOne(filter)
-      if (user) throw new ReqError('Contact already exists')
-      res(true)
-    } catch (err) {
-      rej(err)
-    }
-  })
+  const user = await Contact.findOne(filter)
+  if (user) throw new ReqError('Contact already exists')
 }
 
 export const POPULATE_CONTACT = {
@@ -87,7 +105,15 @@ export const POPULATE_CONTACT = {
 
 export default mongoose.model('contact', schema) as ContactModel
 interface ContactModel extends Model<ContactType, {}, ContactCustomMethods> {
-  checkUserNotExists(user1, user2): void
+  checkUsersNotExists(
+    user1: Types.ObjectId,
+    user2: Types.ObjectId
+  ): Promise<void>
+
+  checkContactIsReady(
+    userId: string | Types.ObjectId,
+    id: string | Types.ObjectId
+  ): Promise<void>
 }
 
 interface ContactUsersType {
