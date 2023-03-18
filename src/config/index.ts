@@ -5,6 +5,3 @@ export const OTP_CHARACTERS =
 
 export const USER_SAFE_INFO = '_id name username email isVerified avatar'
 export const USER_PUBLIC_INFO = '_id name username avatar'
-
-export const API_SOCKET_PREFIX = '@'
-export const RES_SOCKET_PREFIX = '#'

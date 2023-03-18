@@ -25,7 +25,7 @@ export const saveAndSendContact: GroupController = async (req, res) => {
     contact: await contact.populate(POPULATE_CONTACT),
   })
 
-  req.io.sendTo('putContact', getRoomsFromContact(contact), data)
+  req.io.sendTo('contact/put', getRoomsFromContact(contact), data)
 }
 
 export const getContacts: UserController = async (req, res, next) => {
@@ -69,16 +69,24 @@ export const deleteContact: GroupController = async (req, res, next) => {
 
   if (!req.$contact.name || isOwner) {
     await req.$contact.remove()
-    return res.status(204).end()
+    res.status(204).end()
+    return req.io.sendTo(
+      'contact/delete',
+      getRoomsFromContact(req.$contact),
+      req.$contact._id
+    )
   }
 
-  const user = getAddedUser(req.$contact.users, req.user._id)
-  user.remove()
+  // FIXME: These are maybe buggy!
 
-  if (!isOwner) {
-    await user.save()
-    return res.status(204).end()
-  }
+  getAddedUser(req.$contact.users, req.user._id).remove()
+  await req.$contact.save()
+  res.status(204).end()
 
-  next()
+  req.io.send('contact/delete', req.$contact._id)
+  req.io.sendTo(
+    'contact/put',
+    getRoomsFromContact(req.$contact),
+    req.$contact._id
+  )
 }

@@ -30,6 +30,7 @@ export const isContactOwner = (req: Parameters<GroupController>[0]) => {
 }
 
 export const getRoomsFromContact = (contact: ContactDocument, exclude = '') => {
+  console.log(contact)
   const rooms: string[] = [
     contact.owner._id.toString(),
     ...contact.users.map((user) => user.user._id.toString()),

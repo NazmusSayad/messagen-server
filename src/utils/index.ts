@@ -15,4 +15,4 @@ export const getFieldsFromObject = <
   return output
 }
 
-export const getSuccess = (data) => ({ status: 'success', data })
+export const getSuccess = <T>(data: T) => ({ status: 'success', data })

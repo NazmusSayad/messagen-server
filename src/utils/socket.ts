@@ -1,6 +1,5 @@
 import { getErrorInfo } from 'req-error'
 import { Namespace, Socket } from 'socket.io'
-import { API_SOCKET_PREFIX, RES_SOCKET_PREFIX } from '../config'
 import { UserDocument } from '../model/User'
 
 export interface SocketController {
@@ -23,7 +22,7 @@ export class SocketRouter {
   #listners: { [ev: string]: SocketController } = {}
 
   on(ev, cb) {
-    this.#listners[API_SOCKET_PREFIX + ev] = cb
+    this.#listners[ev] = cb
   }
 
   setup(io: Namespace) {
@@ -68,7 +67,7 @@ export class SocketRouter {
             .except(this.socket.id)
             .to(rooms)
             .except(this.socket.id)
-            .emit(RES_SOCKET_PREFIX + this.event.slice(1), this.send(data))
+            .emit(this.event, this.send(data))
 
           return body
         },

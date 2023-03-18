@@ -56,7 +56,7 @@ schema.post('remove', function () {
   // TODO: delete all the messages when group is deleted
 })
 
-schema.statics.checkContactIsReady = async function (userId, _id) {
+schema.statics.getContact = async function (userId, _id) {
   _id = _id.toString()
   userId = userId.toString()
   type T = Parameters<typeof this.findOne>[0]
@@ -77,8 +77,9 @@ schema.statics.checkContactIsReady = async function (userId, _id) {
     ],
   }
 
-  const isExists = await this.exists({ $or: [friendFilter, groupFilter] })
-  if (!isExists) throw new ReqError('Recipient does not exist or invalid')
+  const contact = await this.findOne({ $or: [friendFilter, groupFilter] })
+  if (!contact) throw new ReqError('Recipient does not exist or invalid')
+  return contact
 }
 
 schema.statics.checkContactNotExists = async function (user1, user2) {
@@ -110,10 +111,10 @@ interface ContactModel extends Model<ContactType, {}, ContactCustomMethods> {
     user2: Types.ObjectId
   ): Promise<void>
 
-  checkContactIsReady(
+  getContact(
     userId: string | Types.ObjectId,
     id: string | Types.ObjectId
-  ): Promise<void>
+  ): Promise<ContactDocument>
 }
 
 interface ContactUsersType {
