@@ -81,7 +81,7 @@ schema.statics.checkContactIsReady = async function (userId, _id) {
   if (!isExists) throw new ReqError('Recipient does not exist or invalid')
 }
 
-schema.statics.checkUserNotExists = async function (user1, user2) {
+schema.statics.checkContactNotExists = async function (user1, user2) {
   const Contact = this
   user1 = user1.toString()
   user2 = user2.toString()
@@ -105,7 +105,7 @@ export const POPULATE_CONTACT = {
 
 export default mongoose.model('contact', schema) as ContactModel
 interface ContactModel extends Model<ContactType, {}, ContactCustomMethods> {
-  checkUsersNotExists(
+  checkContactNotExists(
     user1: Types.ObjectId,
     user2: Types.ObjectId
   ): Promise<void>
