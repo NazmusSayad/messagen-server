@@ -28,3 +28,13 @@ export const getAddedUser = (
 export const isContactOwner = (req: Parameters<GroupController>[0]) => {
   return req.$contact.owner.toString() === req.user._id.toString()
 }
+
+export const getRoomsFromContact = (contact: ContactDocument, exclude = '') => {
+  const rooms: string[] = [
+    contact.owner._id.toString(),
+    ...contact.users.map((user) => user.user._id.toString()),
+  ]
+
+  if (!exclude) return rooms
+  return rooms.filter((room) => room !== exclude)
+}

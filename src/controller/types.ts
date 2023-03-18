@@ -6,7 +6,7 @@ export interface UserRequest extends Request {
   user: UserDocument
   io: {
     send: typeof mainIo.emit
-    sendTo(ev: string, rooms: string | [string], data: unknown): void
+    sendTo(ev: string, rooms: string | string[], data: unknown): void
     disconnect: typeof mainIo.disconnectSockets
   }
 }

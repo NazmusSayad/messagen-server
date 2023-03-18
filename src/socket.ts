@@ -3,6 +3,7 @@ import { checkType } from 'express-master'
 import socketRoutes from './routes/socketRoute'
 import * as jwt from './utils/jwt'
 import { getErrorInfo } from 'req-error'
+import { API_SOCKET_PREFIX } from './config'
 
 const io = new Server({ cors: { origin: '*' } })
 
@@ -15,12 +16,13 @@ mainIo.on('connection', async (socket) => {
     checkType.string({ authorization })
 
     const user = await jwt.parseUserFromToken(authorization, true)
-    socket.emit('ok', true)
     socket.join(user._id.toString())
 
+    socket.emit('ok', true)
     socket.onAny((ev: string, ...args: [any, Function]) => {
-      if (ev.startsWith('$')) return
-      socketRoutes.runSocket(socket, user, ev, ...args)
+      if (ev.startsWith(API_SOCKET_PREFIX)) {
+        socketRoutes.runSocket(socket, user, ev, ...args)
+      }
     })
   } catch (err) {
     socket.emit('error', getErrorInfo(err)[0])

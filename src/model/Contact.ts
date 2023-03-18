@@ -40,7 +40,6 @@ const schema = new mongoose.Schema<ContactType>(
 schema.pre('save', function () {
   const ownerId = this.owner.toString()
   const userIds = this.users.map(({ user }) => user.toString())
-  console.log(userIds, ownerId)
 
   if (userIds.includes(ownerId)) {
     throw new ReqError('Owner cannot be present with users')
@@ -53,7 +52,6 @@ schema.pre('save', function () {
 
 schema.post('remove', function () {
   // TODO: delete all the messages when group is deleted
-  console.log(this)
 })
 
 schema.statics.checkContactIsReady = async function (userId, _id) {

@@ -2,7 +2,7 @@ import { checkType } from 'express-master'
 import Contact, { ContactDocument, POPULATE_CONTACT } from '../../model/Contact'
 import User from '../../model/User'
 import { UserController } from '../types'
-import { getAddedUser, isContactOwner } from './utils'
+import { getAddedUser, getRoomsFromContact, isContactOwner } from './utils'
 
 export type GroupController = UserController<{
   $contact: ContactDocument
@@ -21,9 +21,11 @@ export const setContact: GroupController = async (req, res, next) => {
 
 export const saveAndSendContact: GroupController = async (req, res) => {
   const contact = await req.$contact.save()
-  res.success({
+  const data = res.success({
     contact: await contact.populate(POPULATE_CONTACT),
   })
+
+  req.io.sendTo('putContact', getRoomsFromContact(contact), data)
 }
 
 export const getContacts: UserController = async (req, res, next) => {

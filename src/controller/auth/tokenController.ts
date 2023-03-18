@@ -2,6 +2,7 @@ import * as jwt from '../../utils/jwt'
 import { mainIo } from '../../socket'
 import { UserController } from '../types'
 import { checkType } from 'express-master'
+import { RES_SOCKET_PREFIX } from '../../config'
 
 export const sendCookieToken: UserController = (req, res) => {
   res.cookie('cookieToken', jwt.generateCookieToken(req.user), {
@@ -41,7 +42,10 @@ const checkAuthFactory =
       send: sockets.emit,
       disconnect: sockets.disconnectSockets,
       sendTo(ev, rooms, data) {
-        mainIo.to(rooms).to(user._id.toString()).except(socketid).emit(ev, data)
+        sockets
+          .to(rooms)
+          .except(socketid)
+          .emit(RES_SOCKET_PREFIX + ev, data)
       },
     }
 
