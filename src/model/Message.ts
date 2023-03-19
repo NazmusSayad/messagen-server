@@ -6,13 +6,11 @@ const schema = new mongoose.Schema<MessageType>(
     from: {
       type: mongoose.Types.ObjectId as any,
       required: true,
-      populate: true,
       ref: 'user',
     },
-
     to: {
       type: mongoose.Types.ObjectId as any,
-      select: false,
+      required: true,
     },
 
     images: [String],

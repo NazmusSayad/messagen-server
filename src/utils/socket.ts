@@ -9,8 +9,10 @@ export interface SocketController {
     user: UserDocument
     event: string
     data: any
-    send<T extends any>(data: T): { status: 'success'; data: T }
-    sendTo<T extends any>(
+    send<T extends { [key: string]: any }>(
+      data: T
+    ): { status: 'success'; data: T }
+    sendTo<T extends { [key: string]: any }>(
       to: string | string[],
       data: T
     ): { status: 'success'; data: T }

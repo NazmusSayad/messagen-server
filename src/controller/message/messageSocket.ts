@@ -8,6 +8,13 @@ export const getMessage: SocketController = async (info) => {
   const messages = await Message
 }
 
+export const getMessagesOlderThan: SocketController = async (info) => {
+  checkType.string(info.data)
+  const contact = await Contact.getContact(info.user._id, info.data.to)
+  const messages = await Message.find({ to: contact._id })
+  info.send({ messages })
+}
+
 export const createMessage: SocketController = async (info) => {
   const { to, text, images } = info.data
   checkType.string({ to })
@@ -17,7 +24,7 @@ export const createMessage: SocketController = async (info) => {
   const contact = await Contact.getContact(info.user._id, to)
   const message = await Message.create({
     from: info.user,
-    to,
+    to: contact._id,
     text,
     images,
   })
