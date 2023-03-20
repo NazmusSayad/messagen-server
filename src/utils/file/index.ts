@@ -16,8 +16,17 @@ const writeFile: WriteFile = (fileName, ...args) => {
   return ci.save(filePath)
 }
 
+const getBASE64SizeInKb = (base64: string) => {
+  const sizeInBytes = 4 * Math.ceil(base64.length / 3) * 0.5624896334383812
+  return sizeInBytes / 1000
+}
+
 export const uploadBASE64Files = (files: string[]) => {
   const promises = files.map((base64) => {
+    if (getBASE64SizeInKb(base64) > 2048) {
+      throw new ReqError('File is too largey')
+    }
+
     const match = base64.match(regex)
     const ext = match && match[1]?.toLowerCase()
     if (!ci.allowed_formats.includes(ext)) throw new ReqError('Invalid image')
