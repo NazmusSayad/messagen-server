@@ -24,5 +24,5 @@ export const createTempObjectId = () => {
     magic(Date.now() / 1000) +
     ' '.repeat(hex).replace(/./g, () => magic(Math.random() * hex))
 
-  return str + '@' + Date.now()
+  return str + '-' + Date.now()
 }

@@ -1,28 +1,31 @@
 import path from 'path'
-import { existsSync, mkdirSync, WriteFileOptions, writeFileSync } from 'fs'
+import { WriteFileOptions, writeFileSync } from 'fs'
 import { createTempObjectId } from '..'
-const allowedList = ['jpg', 'jpeg', 'png', 'webp']
+import * as ci from './ci'
+const regex = /^data:image\/(\w+);base64,/
 
-const tempFolder = path.join(__dirname, './.cache')
-existsSync(tempFolder) || mkdirSync(tempFolder, { recursive: true })
-
-const writeFile = (
+type WriteFile = (
   fileName: string,
-  ...args: [string | NodeJS.ArrayBufferView, WriteFileOptions?]
-) => {
-  const filePath = path.join(tempFolder, '/', fileName)
+  data: string | NodeJS.ArrayBufferView,
+  options?: WriteFileOptions
+) => Promise<string>
+
+const writeFile: WriteFile = (fileName, ...args) => {
+  const filePath = path.join(ci.tempFolder, '/', fileName)
   writeFileSync(filePath, ...args)
-  return filePath
+  return ci.save(filePath)
 }
 
 export const uploadBASE64Files = (files: string[]) => {
-  return files.map((file) => {
-    const match = file.match(/^data:image\/(\w+);base64,/)
+  const promises = files.map((base64) => {
+    const match = base64.match(regex)
     const ext = match && match[1]?.toLowerCase()
-    if (!allowedList.includes(ext)) throw new ReqError('Invalid image')
+    if (!ci.allowed_formats.includes(ext)) throw new ReqError('Invalid image')
 
-    const base64Data = file.replace(/^data:image\/png;base64,/, '')
+    const base64Data = base64.replace(regex, '')
     const fileName = createTempObjectId() + '.' + ext
     return writeFile(fileName, base64Data, 'base64')
   })
+
+  return Promise.all(promises)
 }

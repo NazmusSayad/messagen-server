@@ -24,10 +24,10 @@ export const createMessage: SocketController = async (info) => {
 
   const contact = await Contact.getContact(info.user._id, to)
   const message = await Message.create({
+    text,
     from: info.user,
     to: contact._id,
-    images: uploadBASE64Files(images),
-    text,
+    images: await uploadBASE64Files(images),
   })
 
   info.sendTo(getRoomsFromContact(contact), { message })

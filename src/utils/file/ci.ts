@@ -1,20 +1,18 @@
 import fs from 'fs'
 import path from 'path'
 import cloudinaryMain from 'cloudinary'
-const { upload, destroy } = cloudinaryMain.v2.uploader
-const tempDir = path.join(__dirname, './.temp')
 
-cloudinaryMain.v2.config({
-  cloud_name: process.env.C_CLOUD_NAME,
-  api_key: process.env.C_API_KEY,
-  api_secret: process.env.C_API_SECRET,
-})
+cloudinaryMain.v2.config()
+export const tempFolder = path.join(__dirname, './.cache')
+const { upload, destroy } = cloudinaryMain.v2.uploader
+export const allowed_formats = ['png', 'jpg', 'webp', 'jpeg', 'svg']
+fs.existsSync(tempFolder) || fs.mkdirSync(tempFolder, { recursive: true })
 
 const cloudinaryOptions = {
+  folder: 'messagen',
+  allowed_formats,
   unique_filename: true,
-  folder: 'avatar',
   resource_type: 'image',
-  allowed_formats: ['png', 'jpg', 'webp', 'jpeg', 'svg'],
   transformation: [
     {
       width: 512,
@@ -28,27 +26,21 @@ const cloudinaryOptions = {
   ],
 }
 
-export const save = async ({ originalname, path: oldPath }) => {
-  const filePath = oldPath + '-' + originalname.replace(/ /gim, '-')
-  fs.renameSync(oldPath, filePath)
-
-  const data = await upload(filePath, cloudinaryOptions as any)
-  fs.rmSync(filePath)
-
-  return data.secure_url ?? data.url
+export const save = async (filePath) => {
+  try {
+    const data = await upload(filePath, cloudinaryOptions as any)
+    fs.rmSync(filePath)
+    return data.secure_url ?? data.url
+  } catch (err) {
+    fs.rmSync(filePath, { force: true })
+    throw err
+  }
 }
 
 export const remove = async (url) => {
   if (!url) return
-  const publicId = url.match(/(avatar\/\w*)(\.\w*)$/)[1]
+  const publicId = url.match(/(messagen\/\w*)(\.\w*)$/)[1]
   await destroy(publicId)
-}
-
-export const updateFile = async ({ file }, user) => {
-  if (!file) return
-  const newUrl = await save(file)
-  if (user.avatar) await remove(user.avatar)
-  user.avatar = newUrl
 }
 
 /* export const fileMiddleware = require('multer')({
