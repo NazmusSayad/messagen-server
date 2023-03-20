@@ -39,13 +39,6 @@ export const save = async (filePath) => {
 
 export const remove = async (url) => {
   if (!url) return
-  const publicId = url.match(/(messagen\/\w*)(\.\w*)$/)[1]
+  const publicId = url.match(/(\w*\/\w*)\.\w*$/)[1]
   await destroy(publicId)
 }
-
-/* export const fileMiddleware = require('multer')({
-  dest: tempDir,
-  limits: {
-    fileSize: 2_500_000,
-  },
-}).single('avatar') */
