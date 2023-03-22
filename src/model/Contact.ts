@@ -90,8 +90,16 @@ schema.statics.checkContactNotExists = async function (user1, user2) {
   type T = Parameters<typeof Contact.findOne>[0]
   const filter: T = {
     $or: [
-      { owner: user1, users: { $elemMatch: { user: user2 } } },
-      { owner: user2, users: { $elemMatch: { user: user1 } } },
+      {
+        owner: user1,
+        users: { $elemMatch: { user: user2 } },
+        name: { $exists: false },
+      },
+      {
+        owner: user2,
+        users: { $elemMatch: { user: user1 } },
+        name: { $exists: false },
+      },
     ],
   }
 
