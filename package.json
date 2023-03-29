@@ -22,7 +22,7 @@
     "manual-node-env": "^1.0.4",
     "mongoose": "^6.8.3",
     "nodemailer": "^6.8.0",
-    "req-error": "^1.0.19",
+    "req-error": "^1.0.21",
     "socket.io": "^4.5.4",
     "xss-clean": "^0.1.1"
   },
