@@ -2,28 +2,29 @@ import path from 'path'
 import { WriteFileOptions, writeFileSync } from 'fs'
 import { createTempObjectId } from '..'
 import * as ci from './ci'
+import { createdAtField } from '../../model/utils'
+import { UploadApiOptions } from 'cloudinary'
 const regex = /^data:image\/(\w+);base64,/
 
 type WriteFile = (
   fileName: string,
   data: string | NodeJS.ArrayBufferView,
   options?: WriteFileOptions
-) => Promise<string>
+) => string
 
 const writeFile: WriteFile = (fileName, ...args) => {
   const filePath = path.join(ci.tempFolder, '/', fileName)
   writeFileSync(filePath, ...args)
-  return ci.save(filePath)
+  return filePath
 }
 
-const getBASE64SizeInKb = (base64: string) => {
-  const sizeInBytes = 4 * Math.ceil(base64.length / 3) * 0.5624896334383812
-  return sizeInBytes / 1000
-}
-
-export const uploadBASE64Files = (files: string[]) => {
+const uploadBASE64Files = (
+  files: string[],
+  options = {} as UploadApiOptions
+) => {
   const promises = files.map((base64) => {
-    if (getBASE64SizeInKb(base64) > 2048) {
+    const sizeInBytes = 4 * Math.ceil(base64.length / 3) * 0.5624896334383812
+    if (sizeInBytes / 1000 > 3072) {
       throw new ReqError('File is too largey')
     }
 
@@ -33,8 +34,15 @@ export const uploadBASE64Files = (files: string[]) => {
 
     const base64Data = base64.replace(regex, '')
     const fileName = createTempObjectId() + '.' + ext
-    return writeFile(fileName, base64Data, 'base64')
+    const filePath = writeFile(fileName, base64Data, 'base64')
+    return ci.save(filePath, options)
   })
 
   return Promise.all(promises)
+}
+
+export const uploadMessage = (files: string[]) => {
+  return uploadBASE64Files(files, {
+    transformation: [{ width: 1920, height: 1920, crop: 'limit' }],
+  })
 }

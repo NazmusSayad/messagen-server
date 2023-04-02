@@ -1,7 +1,7 @@
 import { checkType } from 'express-master'
 import Contact from '../../model/Contact'
 import Message from '../../model/Message'
-import { uploadBASE64Files } from '../../utils/file'
+import { uploadMessage } from '../../utils/file'
 import { SocketController } from '../../utils/socket'
 import { getRoomsFromContact } from '../contact/utils'
 import { USER_PUBLIC_INFO } from '../../config'
@@ -32,7 +32,7 @@ export const createMessage: SocketController = async (info) => {
     text,
     from: info.user,
     to: contact._id,
-    images: await uploadBASE64Files(images),
+    images: await uploadMessage(images),
   })
 
   info.sendTo(getRoomsFromContact(contact), { message })

@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
-import cloudinaryMain from 'cloudinary'
+import cloudinary, { UploadApiOptions } from 'cloudinary'
 
-cloudinaryMain.v2.config()
+cloudinary.v2.config()
 export const tempFolder = path.join(__dirname, './.cache')
-const { upload, destroy } = cloudinaryMain.v2.uploader
+const { upload, destroy } = cloudinary.v2.uploader
 export const allowed_formats = ['png', 'jpg', 'webp', 'jpeg', 'svg']
 fs.existsSync(tempFolder) || fs.mkdirSync(tempFolder, { recursive: true })
 
@@ -13,22 +13,23 @@ const cloudinaryOptions = {
   allowed_formats,
   unique_filename: true,
   resource_type: 'image',
-  transformation: [
-    {
-      width: 512,
-      height: 512,
-      gravity: 'auto',
-      crop: 'fill',
-    },
-    {
-      fetch_format: 'webp',
-    },
-  ],
+  transformation: [{ fetch_format: 'webp' }],
 }
 
-export const save = async (filePath) => {
+export const save = async (
+  filePath,
+  { transformation = [], ...options }: UploadApiOptions
+) => {
   try {
-    const data = await upload(filePath, cloudinaryOptions as any)
+    const data = await upload(filePath, {
+      ...(cloudinaryOptions as any),
+      ...options,
+      transformation: [
+        ...cloudinaryOptions.transformation,
+        ...(transformation as any),
+      ],
+    })
+
     fs.rmSync(filePath)
     return data.secure_url ?? data.url
   } catch (err) {
