@@ -25,9 +25,8 @@ const parseJwt = (token: string) => {
   return tokenInfo
 }
 
-const createUserParser =
-  (key: string) =>
-  async (token: string, isVerified?: boolean): Promise<UserDocument> => {
+const createUserParserFactory = (key: string) => {
+  return async (token: string, isVerified?: boolean): Promise<UserDocument> => {
     const { [key]: userId, iat } = parseJwt(token)
 
     const query: any = { _id: userId }
@@ -44,13 +43,14 @@ const createUserParser =
 
     return user
   }
+}
 
-const createUserTokenCreator = (key: string) => (user: UserDocument) => {
+const createUserTokenFactory = (key: string) => (user: UserDocument) => {
   return generateJwt(key, user._id.toString())
 }
 
-export const generateCookieToken = createUserTokenCreator('cookie')
-export const generateAuthToken = createUserTokenCreator('token')
+export const generateCookieToken = createUserTokenFactory('cookie')
+export const generateAuthToken = createUserTokenFactory('token')
 
-export const parseUserFromCookie = createUserParser('cookie')
-export const parseUserFromToken = createUserParser('token')
+export const parseUserFromCookie = createUserParserFactory('cookie')
+export const parseUserFromToken = createUserParserFactory('token')

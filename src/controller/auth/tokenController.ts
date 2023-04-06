@@ -27,9 +27,8 @@ export const getAuthToken: UserController = async (req, res, next) => {
   next()
 }
 
-const checkAuthFactory =
-  (isVerified: boolean): UserController =>
-  async (req, res, next) => {
+const checkAuthFactory = (isVerified?: boolean): UserController => {
+  return async (req, res, next) => {
     const { authorization, socketid } = req.headers
     checkType.string({ authorization }, { statusCode: 401 })
 
@@ -47,6 +46,8 @@ const checkAuthFactory =
 
     next()
   }
+}
 
 export const checkAuthToken = checkAuthFactory(true)
 export const checkAuthTokenNotVerified = checkAuthFactory(false)
+export const checkAuthTokenAll = checkAuthFactory()

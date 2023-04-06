@@ -12,8 +12,8 @@ const userController = catchError(_userController)
 
 router.post(
   '/delete-me',
-  tokenController.checkAuthTokenNotVerified,
-  authController.checkPassword,
+  tokenController.checkAuthTokenAll,
+  // authController.checkPassword,
   userController.deleteUser
 )
 

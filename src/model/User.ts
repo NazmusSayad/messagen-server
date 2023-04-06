@@ -1,48 +1,50 @@
-// @ts-nocheck
 import mongoose, { HydratedDocument, Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import userSchema, { UserType } from './userSchema'
 import mail from '../utils/mail'
 import { getFieldsFromObject } from '../utils'
-import Friend from './Friend'
-import Message from './Message'
-import Group from './Contact'
+import Contact from './Contact'
 import { USER_SAFE_INFO } from '../config'
+import { getAddedUser, getRoomsFromContact } from '../controller/contact/utils'
+import { mainIo } from '../socket'
 
-userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(
-      this.password,
-      +process.env.BCRYPT_SALT_ROUND
-    )
+userSchema.pre(
+  'save',
+  async function (this: UserDocument & MiddlewarePasser, next) {
+    if (this.isModified('password')) {
+      this.password = await bcrypt.hash(
+        this.password,
+        +process.env.BCRYPT_SALT_ROUND
+      )
 
-    if (!this.isNew) {
-      this.passwordModifiedAt = Math.round(Date.now() / 1000) * 1000
+      if (!this.isNew) {
+        this.passwordModifiedAt = Math.round(Date.now() / 1000) * 1000
+      }
     }
+
+    if (this.verificationCode && this.isModified('verificationCode')) {
+      this._verificationCode = this.verificationCode
+
+      this.verificationCode = await bcrypt.hash(
+        this.verificationCode,
+        +process.env.BCRYPT_SALT_ROUND_2
+      )
+    }
+
+    if (this.recoverCode && this.isModified('recoverCode')) {
+      this._recoverCode = this.recoverCode
+
+      this.recoverCode = await bcrypt.hash(
+        this.recoverCode,
+        +process.env.BCRYPT_SALT_ROUND_2
+      )
+    }
+
+    next()
   }
+)
 
-  if (this.verificationCode && this.isModified('verificationCode')) {
-    this._verificationCode = this.verificationCode
-
-    this.verificationCode = await bcrypt.hash(
-      this.verificationCode,
-      +process.env.BCRYPT_SALT_ROUND_2
-    )
-  }
-
-  if (this.recoverCode && this.isModified('recoverCode')) {
-    this._recoverCode = this.recoverCode
-
-    this.recoverCode = await bcrypt.hash(
-      this.recoverCode,
-      +process.env.BCRYPT_SALT_ROUND_2
-    )
-  }
-
-  next()
-})
-
-userSchema.post('save', function () {
+userSchema.post('save', function (this: UserDocument & MiddlewarePasser) {
   if (this._verificationCode) {
     mail({
       to: this.email,
@@ -60,8 +62,18 @@ userSchema.post('save', function () {
   }
 })
 
-userSchema.post('remove', function (this: UserDocument) {
-  // TODO:
+userSchema.post('remove', async function (user: UserDocument) {
+  const contacts = await Contact.getContactsByUser(user._id)
+  const promises = contacts.map((contact) => {
+    if (contact.owner._id.toString() === user._id.toString()) {
+      return contact.remove()
+    }
+
+    getAddedUser(contact.users, user._id, false).remove()
+    mainIo.to(getRoomsFromContact(contact)).emit('contact/put', contact._id)
+    return contact.save()
+  })
+  await Promise.all(promises).catch(() => {})
 })
 
 userSchema.methods.getSafeInfo = function () {
@@ -84,6 +96,12 @@ userSchema.statics.checkUserExists = function (id, getUser = false) {
 }
 
 export default mongoose.model('user', userSchema) as UserModel
+type MiddlewarePasser = {
+  _recoverCode: string
+  _verificationCode: string
+  passwordModifiedAt: any
+}
+
 interface UserModel extends Model<UserType, {}, UserCustomMethods> {
   checkUserExists(id: string, getUser?: boolean): Promise<UserDocument>
 }

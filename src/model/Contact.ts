@@ -1,6 +1,15 @@
-import mongoose, { HydratedDocument, Model, ObjectId, Types } from 'mongoose'
+import mongoose, { HydratedDocument, Model, Types } from 'mongoose'
 import { USER_PUBLIC_INFO } from '../config'
-import { createdAtField } from './utils'
+import { getRoomsFromContact } from '../controller/contact/utils'
+import { mainIo } from '../socket'
+import Message from './Message'
+import {
+  createdAtField,
+  getAcceptedFriendsQuery,
+  getAcceptedGroupsQuery,
+  getFriendsQuery,
+  getGroupsQuery,
+} from './utils'
 
 const contactUsersSchema = new mongoose.Schema<ContactUsersType>({
   user: {
@@ -52,30 +61,29 @@ schema.pre('save', function () {
   }
 })
 
-schema.post('remove', function () {
-  // TODO: delete all the messages when group is deleted
+schema.post('remove', async function (contact: ContactDocument) {
+  const messages = await Message.find({ to: contact._id }).select('')
+  mainIo.to(getRoomsFromContact(contact)).emit('contact/delete', contact._id)
+  Promise.all(messages.map((msg) => msg.remove())).catch(() => {})
 })
 
-schema.statics.getContact = async function (userId, _id) {
+schema.statics.getContactsByUser = async function (userId: string) {
+  userId = userId.toString()
+  type T = Parameters<typeof this.findOne>[0]
+
+  const friendFilter: T = getFriendsQuery(userId)
+  const groupFilter: T = getGroupsQuery(userId)
+
+  return await this.find({ $or: [friendFilter, groupFilter] })
+}
+
+schema.statics.getContact = async function (userId: string, _id: string) {
   _id = _id.toString()
   userId = userId.toString()
   type T = Parameters<typeof this.findOne>[0]
 
-  const friendFilter: T = {
-    _id,
-    name: { $exists: false },
-    users: { $size: 1, $elemMatch: { accepted: true } },
-    $or: [{ owner: userId }, { users: { $elemMatch: { user: userId } } }],
-  }
-
-  const groupFilter: T = {
-    _id,
-    name: { $exists: true },
-    $or: [
-      { owner: userId },
-      { users: { $elemMatch: { user: userId, accepted: true } } },
-    ],
-  }
+  const friendFilter: T = { _id, ...getAcceptedFriendsQuery(userId, true) }
+  const groupFilter: T = { _id, ...getAcceptedGroupsQuery(userId, true) }
 
   const contact = await this.findOne({ $or: [friendFilter, groupFilter] })
   if (!contact) throw new ReqError('Recipient does not exist or invalid')
@@ -118,6 +126,8 @@ interface ContactModel extends Model<ContactType, {}, ContactCustomMethods> {
     user1: Types.ObjectId,
     user2: Types.ObjectId
   ): Promise<void>
+
+  getContactsByUser(userId: string | Types.ObjectId): Promise<ContactDocument[]>
 
   getContact(
     userId: string | Types.ObjectId,

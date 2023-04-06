@@ -64,7 +64,7 @@ export const updateContact: GroupController = async (req, res, next) => {
   next()
 }
 
-export const deleteContact: GroupController = async (req, res, next) => {
+export const deleteContact: GroupController = async (req, res) => {
   const isOwner = isContactOwner(req)
 
   if (!req.$contact.name || isOwner) {

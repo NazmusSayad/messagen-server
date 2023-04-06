@@ -1,4 +1,8 @@
 import mongoose, { HydratedDocument, Model } from 'mongoose'
+import { getRoomsFromContact } from '../controller/contact/utils'
+import { mainIo } from '../socket'
+import * as file from '../utils/file/ci'
+import Contact from './Contact'
 import { createdAtField } from './utils'
 
 const schema = new mongoose.Schema<MessageType>(
@@ -26,6 +30,10 @@ const schema = new mongoose.Schema<MessageType>(
     versionKey: false,
   }
 )
+
+schema.post('remove', async function ({ images }: MessageDocument) {
+  await Promise.all(images.map(file.remove)).catch(() => {})
+})
 
 export default mongoose.model('message', schema) as Model<
   MessageType,

@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import cloudinary, { UploadApiOptions } from 'cloudinary'
-
 cloudinary.v2.config()
-export const tempFolder = path.join(__dirname, './.cache')
 const { upload, destroy } = cloudinary.v2.uploader
+
+export const tempFolder = path.join(__dirname, './.cache')
 export const allowed_formats = ['png', 'jpg', 'webp', 'jpeg', 'svg']
 fs.existsSync(tempFolder) || fs.mkdirSync(tempFolder, { recursive: true })
 
@@ -38,7 +38,7 @@ export const save = async (
   }
 }
 
-export const remove = async (url) => {
+export const remove = async (url: string) => {
   if (!url) return
   const publicId = url.match(/(\w*\/\w*)\.\w*$/)[1]
   await destroy(publicId)

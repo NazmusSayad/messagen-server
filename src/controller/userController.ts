@@ -18,7 +18,7 @@ export const updateUser: UserController = async (req, res) => {
 }
 
 export const deleteUser: UserController = async (req, res) => {
-  await req.user.delete()
+  await req.user.remove()
   res.status(204).end()
 }
 
