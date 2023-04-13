@@ -4,8 +4,10 @@ export default router
 
 import authRoute from './routes/authRoute'
 import userRoute from './routes/userRoute'
-import groupRoute from './routes/contactRoute'
+import contactRoute from './routes/contactRoute'
+import messagesRoute from './routes/messagesRoute'
 
 router.use('/auth', authRoute)
 router.use('/account', userRoute)
-router.use('/contacts', groupRoute)
+router.use('/contacts', contactRoute)
+router.use('/messages', messagesRoute)

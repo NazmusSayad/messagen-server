@@ -2,7 +2,6 @@ import path from 'path'
 import { WriteFileOptions, writeFileSync } from 'fs'
 import { createTempObjectId } from '..'
 import * as ci from './ci'
-import { createdAtField } from '../../model/utils'
 import { UploadApiOptions } from 'cloudinary'
 const regex = /^data:image\/(\w+);base64,/
 
@@ -41,7 +40,17 @@ const uploadBASE64Files = (
   return Promise.all(promises)
 }
 
-export const uploadMessage = (files: string[]) => {
+export const uploadLocalMessage = (files: Express.Multer.File[]) => {
+  const promises = files.map((file) => {
+    return ci.save(file.path, {
+      transformation: [{ width: 1920, height: 1920, crop: 'limit' }],
+    })
+  })
+
+  return Promise.all(promises)
+}
+
+export const uploadBase64Message = (files: string[]) => {
   return uploadBASE64Files(files, {
     transformation: [{ width: 1920, height: 1920, crop: 'limit' }],
   })

@@ -4,7 +4,9 @@ import socketRoutes from './routes/socketRoute'
 import * as jwt from './utils/jwt'
 import { getErrorInfo } from 'req-error'
 
-const io = new Server({ cors: { origin: '*' } })
+const io = new Server({
+  cors: { origin: '*', credentials: true },
+})
 
 const mainIo = io.of('/')
 socketRoutes.setup(mainIo)
