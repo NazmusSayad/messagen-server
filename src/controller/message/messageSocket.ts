@@ -22,10 +22,11 @@ export const getMessagesOlderThan: SocketController = async (info) => {
 }
 
 export const createMessage: SocketController = async (info) => {
-  const [message, contact] = await msg.create(
-    { user: info.user, body: info.data },
-    true
-  )
+  const [message, contact] = await msg.create({
+    user: info.user,
+    body: info.data,
+  })
+
   info.sendTo(getRoomsFromContact(contact), { message })
 }
 
