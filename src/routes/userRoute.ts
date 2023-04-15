@@ -4,7 +4,8 @@ const router = express.Router()
 export default router
 import * as _tokenController from '../controller/auth/tokenController'
 import * as _authController from '../controller/auth/authController'
-import * as _userController from '../controller/userController'
+import * as _userController from '../controller/user/userController'
+import multer from '../utils/file/multer'
 
 const tokenController = catchError(_tokenController)
 const authController = catchError(_authController)
@@ -19,7 +20,10 @@ router.post(
 
 router.use(tokenController.checkAuthToken)
 
-router.route('/').get(userController.getUser).patch(userController.updateUser)
+router
+  .route('/')
+  .get(userController.getUser)
+  .patch(multer().single('avatar'), userController.updateUser)
 
 router.get('/search', userController.searchUser)
 

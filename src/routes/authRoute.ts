@@ -5,6 +5,7 @@ const router = express.Router()
 export default router
 import * as _tokenController from '../controller/auth/tokenController'
 import * as _authController from '../controller/auth/authController'
+import multer from '../utils/file/multer'
 
 const tokenController = catchError(_tokenController)
 const authController = catchError(_authController)
@@ -20,6 +21,7 @@ router.post('/login', authController.login, tokenController.sendCookieToken)
 router.post(
   '/signup',
   requestLimit({ max: 10 }),
+  multer().single('avatar'),
   authController.signup,
   tokenController.sendCookieToken
 )

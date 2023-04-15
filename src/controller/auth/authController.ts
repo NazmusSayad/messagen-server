@@ -7,6 +7,7 @@ import {
   checkEmailAvailability,
   getQueryFromLoginAndPass,
 } from '../../utils/user'
+import { updateAvatarFromReq } from '../user/utils'
 
 export const signup: UserController = async (req, res, next) => {
   const reqBody = req.getBody('name', 'username', 'email', 'password')
@@ -14,11 +15,13 @@ export const signup: UserController = async (req, res, next) => {
   await checkEmailAvailability(reqBody.email)
 
   const code = crypto.randomUUID().split('-')[0]
-  const user = await User.create({
+  const user = new User({
     ...reqBody,
     verificationCode: code,
   })
 
+  await updateAvatarFromReq(req.user, req)
+  await user.save()
   req.user = user
   next()
 }

@@ -9,7 +9,6 @@ export const allowed_formats = ['png', 'jpg', 'webp', 'jpeg', 'svg']
 fs.existsSync(tempFolder) || fs.mkdirSync(tempFolder, { recursive: true })
 
 const cloudinaryOptions = {
-  folder: 'messagen',
   allowed_formats,
   unique_filename: true,
   resource_type: 'image',
@@ -39,7 +38,6 @@ export const save = async (
 }
 
 export const remove = async (url: string) => {
-  if (!url) return
-  const publicId = url.match(/(\w*\/\w*)\.\w*$/)[1]
-  await destroy(publicId)
+  const publicId = url?.match(/upload\/\w+\/(?<id>.*)\.\w+$/)?.groups?.id
+  publicId && (await destroy(publicId))
 }
