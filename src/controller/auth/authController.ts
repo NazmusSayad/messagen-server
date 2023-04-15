@@ -1,13 +1,13 @@
-import { checkType } from 'express-master'
 import crypto from 'crypto'
 import * as bcrypt from 'bcrypt'
+import { checkType } from 'express-master'
 import User from '../../model/User'
 import { UserController } from '../types'
+import { updateAvatarFromReq } from '../user/utils'
 import {
   checkEmailAvailability,
   getQueryFromLoginAndPass,
 } from '../../utils/user'
-import { updateAvatarFromReq } from '../user/utils'
 
 export const signup: UserController = async (req, res, next) => {
   const reqBody = req.getBody('name', 'username', 'email', 'password')
@@ -20,7 +20,7 @@ export const signup: UserController = async (req, res, next) => {
     verificationCode: code,
   })
 
-  await updateAvatarFromReq(req.user, req)
+  await updateAvatarFromReq(user, req)
   await user.save()
   req.user = user
   next()
