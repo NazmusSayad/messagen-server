@@ -1,8 +1,5 @@
 import mongoose, { HydratedDocument, Model } from 'mongoose'
-import { getRoomsFromContact } from '../controller/contact/utils'
-import { mainIo } from '../socket'
 import * as file from '../utils/file/ci'
-import Contact from './Contact'
 import { createdAtField } from './utils'
 
 const schema = new mongoose.Schema<MessageType>(
@@ -20,7 +17,7 @@ const schema = new mongoose.Schema<MessageType>(
     images: [String],
     text: {
       type: String,
-      maxlength: 300,
+      maxlength: 1000,
       trim: true,
     },
 
