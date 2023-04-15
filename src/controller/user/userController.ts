@@ -3,7 +3,7 @@ import { UserController } from '../types'
 import { checkEmailAvailability } from '../../utils/user'
 import { checkType } from 'express-master'
 import User from '../../model/User'
-import { updateAvatarFromReq } from './utils'
+import { updateAvatarAndSave } from './utils'
 
 export const getUser: UserController = (req, res) => {
   res.success({ user: req.user.getSafeInfo() })
@@ -14,8 +14,7 @@ export const updateUser: UserController = async (req, res) => {
   checkType.optional.string({ name: reqBody.name })
 
   req.user.set(reqBody)
-  await updateAvatarFromReq(req.user, req)
-  await req.user.save()
+  await updateAvatarAndSave(req.user, req.file)
   res.success({ user: req.user.getSafeInfo() })
 }
 

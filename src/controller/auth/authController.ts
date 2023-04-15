@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt'
 import { checkType } from 'express-master'
 import User from '../../model/User'
 import { UserController } from '../types'
-import { updateAvatarFromReq } from '../user/utils'
+import { updateAvatarAndSave } from '../user/utils'
 import {
   checkEmailAvailability,
   getQueryFromLoginAndPass,
@@ -20,8 +20,7 @@ export const signup: UserController = async (req, res, next) => {
     verificationCode: code,
   })
 
-  await updateAvatarFromReq(user, req)
-  await user.save()
+  await updateAvatarAndSave(user, req.file)
   req.user = user
   next()
 }
