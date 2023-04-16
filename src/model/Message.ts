@@ -17,7 +17,10 @@ const schema = new mongoose.Schema<MessageType>(
     images: [String],
     text: {
       type: String,
-      maxlength: 1000,
+      maxlength: [
+        1000,
+        'The length of messages must be less or euqal than 1000',
+      ],
       trim: true,
     },
 
