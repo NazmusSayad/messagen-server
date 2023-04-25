@@ -5,7 +5,7 @@ cloudinary.v2.config()
 const { upload, destroy } = cloudinary.v2.uploader
 
 export const tempFolder = path.join(__dirname, './.cache')
-export const allowed_formats = ['png', 'jpg', 'webp', 'jpeg', 'svg']
+export const allowed_formats = ['jpg', 'jpeg', 'png', 'bmp', 'webp']
 fs.existsSync(tempFolder) || fs.mkdirSync(tempFolder, { recursive: true })
 
 const cloudinaryOptions = {
