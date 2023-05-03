@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcrypt'
+import * as crypto from 'crypto'
 import { UserController } from '../types'
 import { checkEmailAvailability } from '../../utils/user'
 import { checkType } from 'express-master'
@@ -33,7 +34,10 @@ export const updateEmailRequest: UserController = async (req, res) => {
   req.user.pendingEmail = email
   await req.user.save()
 
-  res.success({ message: `An otp code sent to your email: ${email}` })
+  res.success({
+    message: `An otp code sent to your email: ${email}`,
+    user: req.user,
+  })
 }
 
 export const updateEmail: UserController = async (req, res) => {

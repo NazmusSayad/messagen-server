@@ -40,5 +40,5 @@ router.patch(
 )
 router
   .route('/email')
-  .post(userController.updateEmailRequest)
-  .patch(authController.checkPassword, userController.updateEmail)
+  .post(authController.checkPassword, userController.updateEmailRequest)
+router.route('/email-verify').patch(userController.updateEmail)
